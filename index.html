@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL Profile</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="login-section" class="section active">
+        <div class="container">
+            <div class="login-card">
+                <h1>Login to Your Profile</h1>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">Username or Email:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" id="login-btn">Login</button>
+                </form>
+                <div id="error-message" class="error hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Section -->
+    <div id="profile-section" class="section hidden">
+        <header class="profile-header">
+            <h1>My Profile</h1>
+            <button id="logout-btn" class="logout-btn">Logout</button>
+        </header>
+        
+        <div class="container">
+            <!-- Profile Info -->
+            <div class="profile-info">
+                <div class="info-card">
+                    <h2>Basic Information</h2>
+                    <div id="user-info">
+                        <!-- User data will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h2>XP & Progress</h2>
+                    <div id="xp-info">
+                        <!-- XP data will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h2>Skills & Grades</h2>
+                    <div id="skills-info">
+                        <!-- Skills data will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Section -->
+            <div class="stats-section">
+                <h2>Statistics</h2>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <h3>XP Progress</h3>
+                        <svg id="xp-chart" width="400" height="300">
+                            <!-- XP chart will be generated here -->
+                        </svg>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>Project Results</h3>
+                        <svg id="project-chart" width="400" height="300">
+                            <!-- Project results chart will be generated here -->
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="login.js"></script>
+    <script src="profile.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
