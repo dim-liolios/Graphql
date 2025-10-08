@@ -1,0 +1,60 @@
+1. Login:
+
+    - we send: username + password:
+    const credentials = btoa("john:secret123")
+
+    - server responds with:
+    {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": { "id": 123, "name": "John" }
+    }
+
+--------------------------------------------------------------------------
+
+2. Store JSON Web Token:
+
+    localStorage.setItem('jwt_token', data.token)
+
+--------------------------------------------------------------------------
+
+3. Use JWT for GraphQL requests:
+
+    - we get the JWT:
+    const token = localStorage.getItem('jwt_token')
+
+    fetch('https://((DOMAIN))/api/graphql-engine/v1/graphql', {
+        headers: {
+            'Authorization': `Bearer ${token}` => use JWT for authentication
+        },
+        body: JSON.stringify({
+            query: '{ user { name email } }' => GraphQL query
+        })
+    })
+
+--------------------------------------------------------------------------
+
+1. and 2. in LoginManager (in login.js)
+3. in ProfileManager (in profile.js)
+
+=============================================================================================================
+
+JWT example:
+    Header:
+        {
+        "alg": "HS256",    =>  Algorithm used for signing
+        "typ": "JWT"       =>  Token type
+        }
+
+    Payload:
+        {
+        "sub": "1234567890",           => Subject (user ID)
+        "name": "John Doe",            => User name
+        "iat": 1516239022,             => Issued at (timestamp)
+        "exp": 1516242622,             => Expires at (timestamp)
+        "role": "student"              => Custom data
+        }
+    
+    Signature:
+        - Server creates this using a secret key
+        - Proves the token hasn't been tampered with
+        - Only the server can validate it
