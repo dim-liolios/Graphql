@@ -1,29 +1,30 @@
 class ProfileManager {
     constructor() {
-        this.logoutBtn = document.getElementById('logout-btn')
+        this.logoutButton = document.getElementById('logout-button')
         this.init()
     }
 
     init() {
-        this.logoutBtn.addEventListener('click', this.handleLogout.bind(this))
-        this.loadUserData()  // ← Call it when profile loads
+        this.logoutButton.addEventListener('click', this.handleLogout.bind(this))
+        this.loadUserData()
     }
 
-    handleLogout() {
+    handleLogout(event) {
+        event.preventDefault()
+        this.logout()
         console.log('Logout clicked')
-        // TODO: Implement logout logic
-        
-        // For now, just switch back to login
+
         this.switchToLogin()
     }
 
-    switchToLogin() {
-        document.getElementById('profile-section').classList.add('hidden')
-        document.getElementById('login-section').classList.remove('hidden')
+    logout() {
+        localStorage.removeItem('jwt_token')
+        if (this.logoutButton) {
+            this.logoutButton.classList.add('hidden');
+        }
     }
 
     async loadUserData() {
-        // Get the JWT token we stored during login
         const token = localStorage.getItem('jwt_token')
         
         if (!token) {
@@ -33,22 +34,19 @@ class ProfileManager {
         }
         
         try {
-            // Use JWT for GraphQL request
             const response = await fetch('https://((DOMAIN))/api/graphql-engine/v1/graphql', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,  // ← JWT used here!
+                    'Authorization': `Bearer ${token}`, // this is the JWT
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     query: `
-                        query {
-                            user {
-                                id
-                                login
-                                email
-                                totalUp
-                                totalDown
+                    query {
+                        user {
+                            id
+                            login
+                            email
                             }
                         }
                     `
@@ -62,9 +60,28 @@ class ProfileManager {
             console.error('Failed to load user data:', error)
         }
     }
-}
 
+    displayUserData(user) {
+        document.getElementById('username').textContent = user.login
+        document.getElementById('email').textContent = user.email
+        document.getElementById('total-up').textContent = user.totalUp
+        document.getElementById('total-down').textContent = user.totalDown
+    }
+
+    switchToLogin() {
+        document.getElementById('profile-section').classList.add('hidden')
+        document.getElementById('login-section').classList.remove('hidden')
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     new ProfileManager()
-});
+})
+
+/* notes:
+
+
+
+
+
+*/

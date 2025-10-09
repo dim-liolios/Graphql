@@ -62,6 +62,9 @@ class LoginManager {
     switchToProfile() {
         document.getElementById('login-section').classList.add('hidden')
         document.getElementById('profile-section').classList.remove('hidden')
+        if (this.logoutButton) {
+            this.logoutButton.classList.remove('hidden')
+        }
     }
 
     showError(message) {
@@ -72,15 +75,11 @@ class LoginManager {
     hideError() {
         this.errorMessage.classList.add('hidden')
     }
-
-
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     new LoginManager()
 })
-
-
 
 
 /* notes:
