@@ -37,7 +37,7 @@ class LoginManager {
         const credentials = btoa(`${username}:${password}`)
         // btoa: Binary to ASCII (so btoa("john:secret123") results in: "am9objpzZWNyZXQxMjM=")
 
-        const response = await fetch('https://((DOMAIN))/api/auth/signin', {
+        const response = await fetch('https://platform.zone01.gr/api/auth/signin', {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${credentials}`,
@@ -62,9 +62,6 @@ class LoginManager {
     switchToProfile() {
         document.getElementById('login-section').classList.add('hidden')
         document.getElementById('profile-section').classList.remove('hidden')
-        if (this.logoutButton) {
-            this.logoutButton.classList.remove('hidden')
-        }
     }
 
     showError(message) {
