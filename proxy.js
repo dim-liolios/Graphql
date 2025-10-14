@@ -19,7 +19,7 @@ const server = createServer((req, res) => {
         req.on('end', () => {
             const options = {
                 hostname: 'platform.zone01.gr',
-                path: '/api/auth/signin',
+                path: '/api/auth/now',
                 method: 'POST',
                 headers: req.headers
             }
