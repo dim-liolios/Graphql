@@ -37,7 +37,7 @@ class LoginManager {
         const credentials = btoa(`${username}:${password}`)
         // btoa: Binary to ASCII (so btoa("john:secret123") results in: "am9objpzZWNyZXQxMjM=")
 
-        const response = await fetch('https://platform.zone01.gr/api/auth/signin', {
+        const response = await fetch('http://localhost:3000/api/auth/signin', {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${credentials}`,
