@@ -21,7 +21,10 @@ const server = createServer((req, res) => {
                 hostname: 'platform.zone01.gr',
                 path: '/api/auth/now',
                 method: 'POST',
-                headers: req.headers
+                headers: { ...req.headers,
+                    'User-Agent': 'Mozilla/5.0'
+                },
+                minVersion: 'TLSv1.2'
             }
             const proxyReq = request(options, proxyRes => {
                 res.writeHead(proxyRes.statusCode, {
