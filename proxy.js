@@ -24,10 +24,22 @@ const server = createServer((req, res) => {
                 headers: req.headers
             }
             const proxyReq = request(options, proxyRes => {
-                res.writeHead(proxyRes.statusCode, proxyRes.headers)
-                // sets the status code and headers of our response to frontend (github pages) to match those of the Zone01 server
+                res.writeHead(proxyRes.statusCode, {
+                    ...proxyRes.headers,
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                }) // sets the status code and headers of our response to frontend (github pages) to match those of the Zone01 server
                 proxyRes.pipe(res)
                 // streams the body of the response from zone01 directly to our frontend client (github pages)
+            })
+            proxyReq.on('error', err => {
+                res.writeHead(502, {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                })
+                res.end('Bad Gateway: ' + err.message)
             })
             proxyReq.write(body)
             proxyReq.end()
