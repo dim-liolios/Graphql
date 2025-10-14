@@ -4,7 +4,7 @@ import { request } from 'https'
 const server = createServer((req, res) => {
     // setting CORS headers for all responses:
     res.setHeader('Access-Control-Allow-Origin', '*')
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
     if (req.method === 'OPTIONS') {
@@ -13,7 +13,7 @@ const server = createServer((req, res) => {
         return
     }
 
-    if (req.method === 'GET' && req.url === '/api/object/athens') {
+    if (req.method === 'GET' && req.url.startsWith('/api/object/athens')) {
         const options = {
             hostname: 'platform.zone01.gr',
             path: '/api/object/athens',
@@ -43,7 +43,7 @@ const server = createServer((req, res) => {
         })
         proxyReq.end()
     }
-    
+
     if (req.method === 'POST' && req.url === '/api/auth/signin') {
         let body = ''
         req.on('data', chunk => { body += chunk; })
