@@ -11,9 +11,8 @@ const server = createServer((req, res) => {
         res.writeHead(204)
         res.end()
         return
-    }
 
-    if (req.method === 'GET' && req.url.startsWith('/api/object/athens')) {
+    } else if (req.method === 'GET' && req.url.startsWith('/api/object/athens')) {
         const options = {
             hostname: 'platform.zone01.gr',
             path: '/api/object/athens',
@@ -42,9 +41,7 @@ const server = createServer((req, res) => {
             res.end('Bad Gateway: ' + err.message)
         })
         proxyReq.end()
-    }
-
-    if (req.method === 'POST' && req.url === '/api/auth/signin') {
+    } else if (req.method === 'POST' && req.url === '/api/auth/signin') {
         let body = ''
         req.on('data', chunk => { body += chunk; })
         req.on('end', () => {
