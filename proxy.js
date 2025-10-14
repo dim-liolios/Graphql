@@ -2,6 +2,17 @@ import { createServer } from 'http'
 import { request } from 'https'
 
 const server = createServer((req, res) => {
+    // setting CORS headers for all responses:
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204)
+        res.end()
+        return
+    }
+
     if (req.method === 'POST' && req.url === '/api/auth/signin') {
         let body = ''
         req.on('data', chunk => { body += chunk; })
