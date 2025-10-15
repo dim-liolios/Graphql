@@ -42,13 +42,13 @@ const server = createServer((req, res) => {
                     'Access-Control-Allow-Methods': 'POST, OPTIONS',
                     'Access-Control-Allow-Headers': 'Content-Type, Authorization'
                 })
+                res.end('Bad Gateway: ' + err.message)
             })
             proxyReq.write(body)
             proxyReq.end()
         })
     } else {
         res.writeHead(404)
-        console.error('Proxy error:', err)
         res.end('Not found')
     }
 })
