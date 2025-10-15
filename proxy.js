@@ -20,9 +20,13 @@ const server = createServer((req, res) => {
                 hostname: 'platform.zone01.gr',
                 path: '/api/auth/signin',
                 method: 'POST',
+                // headers: {
+                //     'Content-Type': 'application/json',
+                //     'User-Agent': 'Mozilla/5.0',
+                // },
                 headers: {
-                    'Content-Type': 'application/json',
-                    'User-Agent': 'Mozilla/5.0',
+                    ...req.headers,
+                    'User-Agent': 'Mozilla/5.0'
                 },
                 minVersion: 'TLSv1.2'
             }
