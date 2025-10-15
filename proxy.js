@@ -20,7 +20,10 @@ const server = createServer((req, res) => {
                 hostname: 'platform.zone01.gr',
                 path: '/api/auth/signin',
                 method: 'POST',
-                headers: { ...req.headers, 'User-Agent': 'Mozilla/5.0'},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Mozilla/5.0',
+                },
                 minVersion: 'TLSv1.2'
             }
             const proxyReq = request(options, proxyRes => {
@@ -46,6 +49,7 @@ const server = createServer((req, res) => {
         })
     } else {
         res.writeHead(404)
+        console.error('Proxy error:', err)
         res.end('Not found')
     }
 })

@@ -17,8 +17,6 @@ class LoginManager {
         const username = document.getElementById('username').value
         const password = document.getElementById('password').value
         
-        console.log('Login attempt:', { username, password })
-        
         try {
             const loginSuccessful = await this.attemptLogin(username, password)
             
