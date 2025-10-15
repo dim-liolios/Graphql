@@ -37,9 +37,8 @@ class LoginManager {
         const credentials = btoa(`${username}:${password}`)
         // btoa: Binary to ASCII (so btoa("john:secret123") results in: "am9objpzZWNyZXQxMjM=")
 
-        // fetch('https://graphql-wi3q.onrender.com/api/auth/signin'
-        const response = await fetch('https://graphql-wi3q.onrender.com/api/object/athens', {
-            method: 'GET',
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/auth/signin', {
+            method: 'POST',
             headers: {
                 'Authorization': `Basic ${credentials}`,
                 'Content-Type': 'application/json'

@@ -35,7 +35,7 @@ class ProfileManager {
         }
         
         try {
-            const response = await fetch('https://platform.zone01.gr/api/graphql-engine/v1/graphql', {
+            const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`, // this is the JWT

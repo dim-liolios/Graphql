@@ -12,46 +12,15 @@ const server = createServer((req, res) => {
         res.end()
         return
 
-    } else if (req.method === 'GET' && req.url.startsWith('/api/object/athens')) {
-        const options = {
-            hostname: 'platform.zone01.gr',
-            path: '/api/object/athens',
-            method: 'GET',
-            headers: {
-                ...req.headers,
-                'User-Agent': 'Mozilla/5.0'
-            },
-            minVersion: 'TLSv1.2'
-        }
-        const proxyReq = request(options, proxyRes => {
-            res.writeHead(proxyRes.statusCode, {
-                ...proxyRes.headers,
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-            })
-            proxyRes.pipe(res)
-        })
-        proxyReq.on('error', err => {
-            res.writeHead(502, {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-            })
-            res.end('Bad Gateway: ' + err.message)
-        })
-        proxyReq.end()
     } else if (req.method === 'POST' && req.url === '/api/auth/signin') {
         let body = ''
         req.on('data', chunk => { body += chunk; })
         req.on('end', () => {
             const options = {
                 hostname: 'platform.zone01.gr',
-                path: '/api/auth/now',
+                path: '/api/auth/signin',
                 method: 'POST',
-                headers: { ...req.headers,
-                    'User-Agent': 'Mozilla/5.0'
-                },
+                headers: { ...req.headers, 'User-Agent': 'Mozilla/5.0'},
                 minVersion: 'TLSv1.2'
             }
             const proxyReq = request(options, proxyRes => {
