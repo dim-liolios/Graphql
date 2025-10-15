@@ -49,10 +49,9 @@ class LoginManager {
             throw new Error(errorData.message || 'Login failed')
         }
         
-        const data = await response.json()
-        console.log('Login response:', data)
-        localStorage.setItem('jwt_token', data.token)
-        // localStorage: browser storage (like a simple database) that persists data even after closing the browser 
+        const token = await response.text()
+        localStorage.setItem('jwt_token', token)
+        // localStorage: browser storage (like a simple database) that persists data even after closing the browser
         // Key-value storage accessible from any page on the same domain
     
     return true
