@@ -42,7 +42,8 @@ class LoginManager {
             headers: {
                 'Authorization': `Basic ${credentials}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({})
         })
 
         if (!response.ok) {
