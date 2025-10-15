@@ -16,7 +16,6 @@ const server = createServer((req, res) => {
         let body = ''
         req.on('data', chunk => { body += chunk; })
         req.on('end', () => {
-            console.log('Incoming request headers:', req.headers)
             const options = {
                 hostname: 'platform.zone01.gr',
                 path: '/api/auth/signin',
@@ -28,7 +27,6 @@ const server = createServer((req, res) => {
                     },
                 minVersion: 'TLSv1.2'
             }
-            console.log('Proxying request with headers:', options.headers)
             const proxyReq = request(options, proxyRes => {
                 res.writeHead(proxyRes.statusCode, {
                     ...proxyRes.headers,
