@@ -13,10 +13,10 @@ class LoginManager {
 
     async handleLogin(event) {
         event.preventDefault()
-        
-        const username = document.getElementById('username').value
-        const password = document.getElementById('password').value
-        
+
+        const username = document.getElementById('login-username').value
+        const password = document.getElementById('login-password').value
+
         try {
             const loginSuccessful = await this.attemptLogin(username, password)
             

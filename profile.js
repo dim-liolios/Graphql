@@ -13,7 +13,6 @@ class ProfileManager {
     handleLogout(event) {
         event.preventDefault()
         this.logout()
-        console.log('Logout clicked')
 
         this.switchToLogin()
     }
@@ -53,14 +52,20 @@ class ProfileManager {
                     `
                 })
             })
+        
+            if (!response.ok) {
+                const errBody = await response.text().catch(() => '')
+                console.error('GraphQL request failed:', response.status, errBody)
+                this.switchToLogin()
+                return
+            }
             
             const data = await response.json()
-            console.log('Full response:', data) // this log will show us the available fields to ask for in our query
+            if (data.errors) console.error('GraphQL errors:', data.errors)
             this.displayUserData(data.data.user)
-            
+
         } catch (error) {
             console.error('Failed to load user data:', error)
-            console.log('GraphQL errors:', data.errors)  // same for this log, we can see the availabe fields
         }
     }
 
