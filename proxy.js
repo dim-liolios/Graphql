@@ -8,13 +8,11 @@ function forwardToZone01(req, res, apiPath) {
         const options = {
             hostname: 'platform.zone01.gr',
             path: apiPath,
-            method: req.method,
+            method: 'POST',
             headers: {
                 'Authorization': req.headers['authorization'],
                 'Content-Type': req.headers['content-type'] || 'application/json',
-                'User-Agent': 'Mozilla/5.0'
-            },
-            minVersion: 'TLSv1.2'
+            }
         }
         const proxyReq = request(options, proxyRes => {
             res.writeHead(proxyRes.statusCode, {
