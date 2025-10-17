@@ -140,7 +140,12 @@ class ProfileManager {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    new ProfileManager()
+    if (localStorage.getItem('jwt_token')) {
+        new ProfileManager()
+    } else {
+        document.getElementById('profile-section').classList.add('hidden')
+        document.getElementById('login-section').classList.remove('hidden')
+    }
 })
 
 /* notes:
