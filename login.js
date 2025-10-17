@@ -23,6 +23,7 @@ class LoginManager {
             if (loginSuccessful) {
                 this.hideError()
                 this.switchToProfile()
+                new ProfileManager()
             } else {
                 this.showError('Invalid username or password')
             }
