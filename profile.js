@@ -71,8 +71,14 @@ class ProfileManager {
     }
 
     switchToLogin() {
-        document.getElementById('profile-section').classList.add('hidden')
-        document.getElementById('login-section').classList.remove('hidden')
+        const loginSection = document.getElementById('login-section')
+        const profileSection = document.getElementById('profile-section')
+
+        profileSection.classList.remove('active')
+        profileSection.classList.add('hidden')
+
+        loginSection.classList.remove('hidden')
+        loginSection.classList.add('active')
     }
 
     drawXPChart(xpArray) {

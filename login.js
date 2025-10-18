@@ -59,8 +59,14 @@ class LoginManager {
     }
     
     switchToProfile() {
-        document.getElementById('login-section').classList.add('hidden')
-        document.getElementById('profile-section').classList.remove('hidden')
+        const loginSection = document.getElementById('login-section')
+        const profileSection = document.getElementById('profile-section')
+
+        loginSection.classList.remove('active')
+        loginSection.classList.add('hidden')
+
+        profileSection.classList.remove('hidden')
+        profileSection.classList.add('active')
     }
 
     showError(message) {
