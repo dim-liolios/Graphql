@@ -38,11 +38,19 @@ class ProfileManager {
                 },
                 body: JSON.stringify({
                     query: `
-                    query {
-                        user {
-                            id
-                            login
-                            email
+                        query {
+                            user {
+                                id
+                                login
+                                email
+                                transaction(where: {type: {_eq: "xp"}}) {
+                                    amount
+                                    createdAt
+                                }
+                                progress {
+                                    grade
+                                    createdAt
+                                }
                             }
                         }
                     `
@@ -57,8 +65,26 @@ class ProfileManager {
             }
             
             const data = await response.json()
-            if (data.errors) console.error('GraphQL errors:', data.errors)
+            console.log('Full GraphQL response:', data)
+
+            if (data.errors) {
+                console.error('GraphQL errors:', data.errors)
+                return
+            }
+            if (!data.data || !data.data.user) {
+                console.error('No user data found:', data)
+                return
+            }
+
             this.displayUserData(data.data.user)
+
+            const xpArray = (data.data.user.transaction || []).map(tx => tx.amount)
+            this.drawXPChart(xpArray)
+
+            const progress = data.data.user.progress || []
+            const pass = progress.filter(p => p.grade === 1).length
+            const fail = progress.filter(p => p.grade === 0).length
+            this.drawProjectPieChart(pass, fail)
 
         } catch (error) {
             console.error('Failed to load user data:', error)
