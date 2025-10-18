@@ -30,58 +30,15 @@ class ProfileManager {
         }
         
         try {
-            const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`, // this is the JWT
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    query: `
-                        query {
-                            user {
-                                id
-                                login
-                                email
-                                transaction(where: {type: {_eq: "xp"}}) {
-                                    amount
-                                    createdAt
-                                }
-                                progress {
-                                    grade
-                                    createdAt
-                                }
-                            }
-                        }
-                    `
-                })
-            })
-        
-            if (!response.ok) {
-                const errBody = await response.text().catch(() => '')
-                console.error('GraphQL request failed:', response.status, errBody)
-                this.switchToLogin()
-                return
-            }
-            
-            const data = await response.json()
-            console.log('Full GraphQL response:', data)
+            const user = await this.fetchUserInfo(token)
+            if (!user) return
 
-            if (data.errors) {
-                console.error('GraphQL errors:', data.errors)
-                return
-            }
-            if (!data.data || !data.data.user) {
-                console.error('No user data found:', data)
-                return
-            }
+            this.displayUserData(user)
 
-            this.displayUserData(data.data.user)
-
-            const xpArray = (data.data.user.transaction || []).map(tx => tx.amount)
+            const xpArray = await this.fetchUserTransactions(token, user.id)
             this.drawXPChart(xpArray)
 
-            const progress = data.data.user.progress || []
+            const progress = await this.fetchUserProgress(token, user.id)
             const pass = progress.filter(p => p.grade === 1).length
             const fail = progress.filter(p => p.grade === 0).length
             this.drawProjectPieChart(pass, fail)
@@ -105,6 +62,85 @@ class ProfileManager {
 
         loginSection.classList.remove('hidden')
         loginSection.classList.add('active')
+    }
+    
+        async fetchUserInfo(token) {
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                        user {
+                            id
+                            login
+                            email
+                        }
+                    }
+                `
+            })
+        })
+        const data = await response.json()
+        if (data.errors || !data.data || !data.data.user || !data.data.user.length) {
+            console.error('User query error:', data.errors || data)
+            return null
+        }
+        return data.data.user[0]
+    }
+
+    async fetchUserTransactions(token, userId) {
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                        transaction(where: { userId: { _eq: ${userId} }, type: { _eq: "xp" } }) {
+                            amount
+                            createdAt
+                        }
+                    }
+                `
+            })
+        })
+        const data = await response.json()
+        if (data.errors || !data.data || !data.data.transaction) {
+            console.error('Transaction query error:', data.errors || data)
+            return []
+        }
+        return data.data.transaction.map(tx => tx.amount)
+    }
+
+    async fetchUserProgress(token, userId) {
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                        progress(where: { userId: { _eq: ${userId} } }) {
+                            grade
+                            createdAt
+                        }
+                    }
+                `
+            })
+        })
+        const data = await response.json()
+        if (data.errors || !data.data || !data.data.progress) {
+            console.error('Progress query error:', data.errors || data)
+            return []
+        }
+        return data.data.progress
     }
 
     drawXPChart(xpArray) {
