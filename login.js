@@ -46,11 +46,13 @@ class LoginManager {
         })
 
         if (!response.ok) {
-            const errorData = await response.json()
-            throw new Error(errorData.message || 'Login failed')
+            const errorText = await response.text()
+            throw new Error(errorText || 'Login failed')
         }
         
-        const token = await response.text()
+        const token = (await response.text()).replace(/^"|"$/g, '')
+        // the JWT received from zone01 upon successful login is a string with "". so we have
+        // to user .text() method instead of .json() and need to remove them in order to use it later for graphql requests
         localStorage.setItem('jwt_token', token)
         // localStorage: browser storage (like a simple database) that persists data even after closing the browser
         // Key-value storage accessible from any page on the same domain
