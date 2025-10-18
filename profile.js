@@ -12,16 +12,12 @@ class ProfileManager {
 
     handleLogout(event) {
         event.preventDefault()
-        this.logout()
-
-        this.switchToLogin()
-    }
-
-    logout() {
         localStorage.removeItem('jwt_token')
         if (this.logoutButton) {
             this.logoutButton.classList.add('hidden');
         }
+        
+        this.switchToLogin()
     }
 
     async loadUserData() {
@@ -138,11 +134,6 @@ class ProfileManager {
         svg.appendChild(pathFail)
     }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('profile-section').classList.add('hidden')
-    document.getElementById('login-section').classList.remove('hidden')
-})
 
 /* notes:
 
