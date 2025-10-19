@@ -39,13 +39,14 @@ class ProfileManager {
             // SECTION 2 (xp):
             const progress = await this.fetchUserProgress(token, user.id)
             console.log('User progress:', progress)
-            // we need only unique passed projects (grade = 1):
+            // we need only unique passed projects (grade >= 0):
             const passedProjectsIds = [...new Set(progress.filter(p => p.grade >= 1).map(p => p.objectId))]
 
             // we need to fetch the info of passed only projects:
             const objectsInfo = await this.fetchObjectsInfo(token, passedProjectsIds)
+            console.log('All object types for passed projects:', objectsInfo)
 
-            const validTypes = ["project"] // only keep projects
+            const validTypes = ["project", "piscine"] // only keep projects and exercises
             const filteredObjectIds = objectsInfo
                 .filter(obj => validTypes.includes(obj.type))
                 .map(obj => obj.id)
