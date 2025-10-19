@@ -52,7 +52,7 @@ class ProfileManager {
             })
 
             // Filter only projects, modules, and piscine
-            const validTypes = ["project", "module", "piscine"]
+            const validTypes = ["project", "module", "piscine", "exercise"]
             const filteredXP = allXPTransactions.filter(tx => 
                 validTypes.includes(objectTypeMap[tx.objectId])
             )
@@ -67,6 +67,8 @@ class ProfileManager {
             // so we fetch all xp for passed projects only:
             const xpAmount = filteredXP.reduce((sum, tx) => sum + tx.amount, 0)
             document.getElementById('xp').textContent = Math.ceil(xpAmount / 1024) + ' kB'
+
+
 
             // SECTION 3 (progress):
 
@@ -202,10 +204,6 @@ class ProfileManager {
         return data.data.object
     }
 
-
-
-
-
     async fetchUserTransactions(token, userId) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
             method: 'POST',
@@ -231,6 +229,8 @@ class ProfileManager {
         }
         return data.data.transaction // <-- return the whole transaction, not just amount
 }
+
+
 
 
     drawXPChart(xpArray) {
