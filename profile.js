@@ -51,12 +51,22 @@ class ProfileManager {
                 objectTypeMap[obj.id] = obj.type
             })
 
-            // Filter transactions by date (from 15 October 2024 onwards)
-            const cutoffDate = new Date('2024-10-15')
-            const recentXP = allXPTransactions.filter(tx => new Date(tx.createdAt) >= cutoffDate)
+            // Filter transactions:
+            // - Include "project", "module", "piscine" types for any date
+            // - Include "exercise" type ONLY if date is 29-10-2024
+            const exerciseDate = '2024-10-29'
+            const validTypes = ["project", "module", "piscine"]
+            const filteredXP = allXPTransactions.filter(tx => {
+                const type = objectTypeMap[tx.objectId] || 'unavailable'
+                const txDate = tx.createdAt ? tx.createdAt.slice(0, 10) : ''
+                return (
+                    validTypes.includes(type) ||
+                    (type === "exercise" && txDate === exerciseDate)
+                )
+            })
 
             // Log raw values for all recent transactions
-            recentXP.forEach(tx => {
+            filteredXP.forEach(tx => {
                 const type = objectTypeMap[tx.objectId] || 'unavailable'
                 const grade = objectGradeMap[tx.objectId] !== undefined ? objectGradeMap[tx.objectId] : 'N/A'
                 console.log(`Type: ${type}, XP: ${tx.amount} bytes, objectId: ${tx.objectId}, grade: ${grade}, date: ${tx.createdAt}`)
