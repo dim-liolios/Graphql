@@ -52,7 +52,7 @@ class ProfileManager {
             })
 
             // Filter only projects, modules, and piscine
-            const validTypes = ["project", "module", "piscine", "exercise"]
+            const validTypes = ["project", "module", "piscine"]
             const filteredXP = allXPTransactions.filter(tx => 
                 validTypes.includes(objectTypeMap[tx.objectId])
             )
