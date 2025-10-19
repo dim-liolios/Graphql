@@ -39,11 +39,19 @@ class ProfileManager {
             // SECTION 2 (xp):
             const progress = await this.fetchUserProgress(token, user.id)
             console.log('User progress:', progress)
-            // we need only passed projects (grade = 1):
-            const passedProjectsIds = progress.filter(p => p.grade >= 1).map(p => p.objectId)
+            // we need only unique passed projects (grade = 1):
+            const passedProjectsIds = [...new Set(progress.filter(p => p.grade >= 1).map(p => p.objectId))]
 
-            // so we fetch all xp for passed projects only:
-            const xpAmount = await this.fetchUserXPamount(token, user.id, passedProjectsIds)
+            // we need to fetch the info of passed only projects:
+            const objectsInfo = await this.fetchObjectsInfo(token, passedProjectsIds)
+            
+            const validTypes = ["project", "exercise"] // only keep projects and exercises
+            const filteredObjectIds = objectsInfo
+                .filter(obj => validTypes.includes(obj.type))
+                .map(obj => obj.id)
+
+            // so we fetch all xp for passed projects and exercises only:
+            const xpAmount = await this.fetchUserXPamount(token, user.id, filteredObjectIds)
             document.getElementById('xp').textContent = Math.round(xpAmount / 1024) + ' kB'
 
             // SECTION 3 (progress):
@@ -55,7 +63,7 @@ class ProfileManager {
 
             // SECTION 5 (SVG Graph 2):
 
-            
+
         } catch (error) {
             console.error('Failed to load user data:', error)
         }
@@ -153,6 +161,37 @@ class ProfileManager {
         }
         return data.data.progress
     }
+
+    async fetchObjectsInfo(token, objectIds) {
+        if (!objectIds.length) return []
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                        object(where: { id: { _in: [${objectIds.join(',')}] } }) {
+                            id
+                            type
+                        }
+                    }
+                `
+            })
+        })
+        const data = await response.json()
+        if (data.errors || !data.data || !data.data.object) {
+            console.error('Object info query error:', data.errors || data)
+            return []
+        }
+        return data.data.object
+    }
+
+
+
+
 
     async fetchUserTransactions(token, userId) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
