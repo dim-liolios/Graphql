@@ -51,17 +51,20 @@ class ProfileManager {
                 objectTypeMap[obj.id] = obj.type
             })
 
-            // Filter transactions:
-            // - Include "project", "module", "piscine" types for any date
-            // - Include "exercise" type ONLY if date is 29-10-2024
+            /*Filter transactions:
+                - Include "project" and "module" types for any date
+                - Include "exercise" type ONLY if date is 2024-10-29
+                - Include "piscine" type ONLY if date is 2025-07-17 */
             const exerciseDate = '2024-10-29'
-            const validTypes = ["project", "module", "piscine"]
+            const piscineDate = '2025-07-17'
+            const validTypes = ["project", "module"]
             const filteredXP = allXPTransactions.filter(tx => {
                 const type = objectTypeMap[tx.objectId] || 'unavailable'
                 const txDate = tx.createdAt ? tx.createdAt.slice(0, 10) : ''
                 return (
                     validTypes.includes(type) ||
-                    (type === "exercise" && txDate === exerciseDate)
+                    (type === "exercise" && txDate === exerciseDate) ||
+                    (type === "piscine" && txDate === piscineDate)
                 )
             })
 
