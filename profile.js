@@ -74,8 +74,8 @@ class ProfileManager {
             })
 
             // so we fetch all xp for passed projects only:
-            const xpAmountKB = filteredXP.reduce((sum, tx) => sum + parseFloat(formatXP(tx.amount)), 0)
-            document.getElementById('xp').textContent = xpAmountKB + ' kB'
+            const xpAmountBytes = filteredXP.reduce((sum, tx) => sum + tx.amount, 0)
+            document.getElementById('xp').textContent = xpAmountBytes / 1000 + ' kB'
 
 
 
