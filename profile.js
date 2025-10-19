@@ -77,7 +77,7 @@ class ProfileManager {
 
             // Sum XP in bytes for recent transactions
             const xpAmountBytes = filteredXP.reduce((sum, tx) => sum + tx.amount, 0)
-            document.getElementById('xp').textContent = xpAmountBytes / 1000 + ' KB'
+            document.getElementById('xp').textContent = Math.round(xpAmountBytes / 1000) + ' KB'
 
 
             // SECTION 3 (progress):
