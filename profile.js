@@ -37,6 +37,12 @@ class ProfileManager {
             document.getElementById('email').textContent = user.email
             
             // SECTION 2 (xp):
+            const progress = await this.fetchUserProgress(token, user.id)
+            const objectGradeMap = {}
+            progress.forEach(p => {
+                objectGradeMap[p.objectId] = p.grade
+            })
+
             const allXPTransactions = await this.fetchUserTransactions(token, user.id)
             const allXPObjectIds = [...new Set(allXPTransactions.map(tx => tx.objectId))]
             const allXPObjectsInfo = await this.fetchObjectsInfo(token, allXPObjectIds)
@@ -45,28 +51,22 @@ class ProfileManager {
                 objectTypeMap[obj.id] = obj.type
             })
 
-            // Log type and amount for each XP transaction
-            allXPTransactions.forEach(tx => {
+            // Filter only projects, modules, and piscine
+            const validTypes = ["project", "module", "piscine"]
+            const filteredXP = allXPTransactions.filter(tx => 
+                validTypes.includes(objectTypeMap[tx.objectId])
+            )
+
+            // Log type, amount, and grade for each filtered XP transaction
+            filteredXP.forEach(tx => {
                 const type = objectTypeMap[tx.objectId] || 'unavailable'
-                console.log(`Type: ${type}, XP: ${Math.round(tx.amount / 1024)} kB, objectId: ${tx.objectId}`)
+                const grade = objectGradeMap[tx.objectId] !== undefined ? objectGradeMap[tx.objectId] : 'N/A'
+                console.log(`Type: ${type}, XP: ${Math.ceil(tx.amount / 1024)} kB, objectId: ${tx.objectId}, grade: ${grade}`)
             })
 
-            const progress = await this.fetchUserProgress(token, user.id)
-            console.log('User progress:', progress)
-            // we need only unique passed projects (grade >= 1):
-            const passedProjectsIds = [...new Set(progress.filter(p => p.grade >= 1).map(p => p.objectId))]
-
-            // we need to fetch the info of passed only projects:
-            const objectsInfo = await this.fetchObjectsInfo(token, passedProjectsIds)
-
-            const validTypes = ["project", "piscine", "module"] // only keep projects and exercises
-            const filteredObjectIds = objectsInfo
-                .filter(obj => validTypes.includes(obj.type))
-                .map(obj => obj.id)
-
             // so we fetch all xp for passed projects only:
-            const xpAmount = await this.fetchUserXPamount(token, user.id, filteredObjectIds)
-            document.getElementById('xp').textContent = Math.round(xpAmount / 1024) + ' kB'
+            const xpAmount = filteredXP.reduce((sum, tx) => sum + tx.amount, 0)
+            document.getElementById('xp').textContent = Math.ceil(xpAmount / 1024) + ' kB'
 
             // SECTION 3 (progress):
 
@@ -122,7 +122,7 @@ class ProfileManager {
         return data.data.user[0]
     }
 
-    async fetchUserXPamount(token, userId, passedProjects) {
+    async fetchUserXPamount(token, userId) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
             method: 'POST',
             headers: {
@@ -145,9 +145,8 @@ class ProfileManager {
             console.error('XP amount query error:', data.errors || data)
             return 0
         }
-        
-        const validXP = data.data.transaction.filter(tx => passedProjects.includes(tx.objectId))
-        return validXP.reduce((sum, tx) => sum + tx.amount, 0)
+        // Sum ALL XP transactions (including bonuses)
+        return data.data.transaction.reduce((sum, tx) => sum + tx.amount, 0)
     }
 
     async fetchUserProgress(token, userId) {
