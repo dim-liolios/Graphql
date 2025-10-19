@@ -61,12 +61,12 @@ class ProfileManager {
             filteredXP.forEach(tx => {
                 const type = objectTypeMap[tx.objectId] || 'unavailable'
                 const grade = objectGradeMap[tx.objectId] !== undefined ? objectGradeMap[tx.objectId] : 'N/A'
-                console.log(`Type: ${type}, XP: ${(tx.amount / 1024).toFixed(2)} kB, objectId: ${tx.objectId}, grade: ${grade}`)
+                console.log(`Type: ${type}, XP: ${tx.amount} bytes, objectId: ${tx.objectId}, grade: ${grade}`)
             })
 
             // so we fetch all xp for passed projects only:
-            const xpAmountKB = filteredXP.reduce((sum, tx) => sum + Math.ceil(tx.amount / 1024), 0)
-            document.getElementById('xp').textContent = xpAmountKB + ' kB'
+            const xpAmountBytes = filteredXP.reduce((sum, tx) => sum + tx.amount, 0)
+            document.getElementById('xp').textContent = xpAmountBytes + ' bytes'
 
 
 
