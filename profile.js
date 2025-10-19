@@ -37,13 +37,12 @@ class ProfileManager {
             document.getElementById('email').textContent = user.email
             
             // SECTION 2 (xp):
-            function roundXPBytes(bytes) {
-                if (bytes < 10000) {
-                    return Math.ceil(bytes / 10) * 10
-                } else if (bytes < 100000) {
-                    return Math.ceil(bytes / 100) * 100
+            function formatXP(bytes) {
+                const kb = bytes / 1000
+                if (kb >= 100) {
+                    return Math.round(kb).toString()
                 } else {
-                    return Math.ceil(bytes / 1000) * 1000
+                    return kb.toFixed(1)
                 }
             }
 
@@ -71,12 +70,12 @@ class ProfileManager {
             filteredXP.forEach(tx => {
                 const type = objectTypeMap[tx.objectId] || 'unavailable'
                 const grade = objectGradeMap[tx.objectId] !== undefined ? objectGradeMap[tx.objectId] : 'N/A'
-                console.log(`Type: ${type}, XP: ${tx.amount} bytes, objectId: ${tx.objectId}, grade: ${grade}`)
+                console.log(`Type: ${type}, XP: ${formatXP(tx.amount)} kB, objectId: ${tx.objectId}, grade: ${grade}`)
             })
 
             // so we fetch all xp for passed projects only:
-            const xpAmountBytes = filteredXP.reduce((sum, tx) => sum + roundXPBytes(tx.amount), 0)
-            document.getElementById('xp').textContent = xpAmountBytes / 1000 + ' kB'
+            const xpAmountKB = filteredXP.reduce((sum, tx) => sum + parseFloat(formatXP(tx.amount)), 0)
+            document.getElementById('xp').textContent = xpAmountKB + ' kB'
 
 
 
