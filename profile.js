@@ -37,6 +37,11 @@ class ProfileManager {
             document.getElementById('email').textContent = user.email
             
             // SECTION 2 (xp):
+            const allXPTransactions = await this.fetchUserTransactions(token, user.id)
+            const allXPObjectIds = [...new Set(allXPTransactions.map(tx => tx.objectId))]
+            const allXPObjectsInfo = await this.fetchObjectsInfo(token, allXPObjectIds)
+            console.log('Types of objects that gave me XP:', allXPObjectsInfo.map(obj => obj.type))
+
             const progress = await this.fetchUserProgress(token, user.id)
             console.log('User progress:', progress)
             // we need only unique passed projects (grade >= 1):
@@ -45,7 +50,7 @@ class ProfileManager {
             // we need to fetch the info of passed only projects:
             const objectsInfo = await this.fetchObjectsInfo(token, passedProjectsIds)
 
-            const validTypes = ["project", "administration", "piscine"] // only keep projects and exercises
+            const validTypes = ["project", "piscine"] // only keep projects and exercises
             const filteredObjectIds = objectsInfo
                 .filter(obj => validTypes.includes(obj.type))
                 .map(obj => obj.id)
@@ -205,7 +210,7 @@ class ProfileManager {
                     query {
                         transaction(where: { userId: { _eq: ${userId} }, type: { _eq: "xp" } }) {
                             amount
-                            createdAt
+                            objectId
                         }
                     }
                 `
@@ -216,8 +221,8 @@ class ProfileManager {
             console.error('Transaction query error:', data.errors || data)
             return []
         }
-        return data.data.transaction.map(tx => tx.amount)
-    }
+        return data.data.transaction // <-- return the whole transaction, not just amount
+}
 
 
     drawXPChart(xpArray) {
