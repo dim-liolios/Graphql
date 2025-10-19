@@ -157,6 +157,13 @@ body {
     padding-bottom: 10px;
 }
 
+#xp {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #667eea;
+    margin-top: 10px;
+}
+
 /* Statistics Section */
 .stats-section {
     margin-top: 40px;

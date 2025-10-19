@@ -30,22 +30,23 @@ class ProfileManager {
         }
         
         try {
-            // section 1:
+            // section 1 (user info):
             const user = await this.fetchUserBasicInfo(token)
             if (!user) return
             document.getElementById('username').textContent = user.login
             document.getElementById('email').textContent = user.email
             
-            // section 2:
-            const xpAmount = await this.fetchUserXPamount(token, user.id)
-            document.getElementById('xp').textContent = xpAmount
+            // section (xp) 2:
+            const progress = await this.fetchUserProgress(token, user.id)
+            console.log('User progress:', progress)
+            const passedProjectsIds = progress.filter(p => p.grade >= 1).map(p => p.objectId)
+
+            const xpAmount = await this.fetchUserXPamount(token, user.id, passedProjectsIds)
+            document.getElementById('xp').textContent = Math.round(xpAmount / 1024) + ' kB'
 
             // section 3:
 
-            const xpArray = await this.fetchUserTransactions(token, user.id)
-            this.drawXPChart(xpArray)
 
-            const progress = await this.fetchUserProgress(token, user.id)
             const pass = progress.filter(p => p.grade === 1).length
             const fail = progress.filter(p => p.grade === 0).length
             this.drawProjectPieChart(pass, fail)
@@ -120,6 +121,33 @@ class ProfileManager {
         return data.data.transaction.reduce((sum, tx) => sum + tx.amount, 0)
     }
 
+    async fetchUserXPamount(token, userId, passedProjects) {
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                        transaction(where: { userId: { _eq: ${userId} }, type: { _eq: "xp" } }) {
+                            amount
+                            objectId
+                        }
+                    }
+                `
+            })
+        })
+        const data = await response.json()
+        if (data.errors || !data.data || !data.data.transaction) {
+            console.error('XP amount query error:', data.errors || data)
+            return 0
+        }
+        
+        const validXP = data.data.transaction.filter(tx => passedProjects.includes(tx.objectId))
+        return validXP.reduce((sum, tx) => sum + tx.amount, 0)
+    }
 
     async fetchUserTransactions(token, userId) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
@@ -145,32 +173,6 @@ class ProfileManager {
             return []
         }
         return data.data.transaction.map(tx => tx.amount)
-    }
-
-    async fetchUserProgress(token, userId) {
-        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                query: `
-                    query {
-                        progress(where: { userId: { _eq: ${userId} } }) {
-                            grade
-                            createdAt
-                        }
-                    }
-                `
-            })
-        })
-        const data = await response.json()
-        if (data.errors || !data.data || !data.data.progress) {
-            console.error('Progress query error:', data.errors || data)
-            return []
-        }
-        return data.data.progress
     }
 
     drawXPChart(xpArray) {
