@@ -35,9 +35,8 @@ class ProfileManager {
             if (!user) return
             document.getElementById('username').textContent = user.login
             document.getElementById('email').textContent = user.email
-            
-            // SECTION 2 (xp):
 
+            // SECTION 2 (xp):
             const progress = await this.fetchUserProgress(token, user.id)
             const objectGradeMap = {}
             progress.forEach(p => {
@@ -52,22 +51,20 @@ class ProfileManager {
                 objectTypeMap[obj.id] = obj.type
             })
 
-            // Filter only projects, modules, and piscine
-            const validTypes = ["project", "module", "piscine"]
-            const filteredXP = allXPTransactions.filter(tx => 
-                validTypes.includes(objectTypeMap[tx.objectId])
-            )
+            // Filter transactions by date (from 15 October 2024 onwards)
+            const cutoffDate = new Date('2024-10-15')
+            const recentXP = allXPTransactions.filter(tx => new Date(tx.createdAt) >= cutoffDate)
 
-            // Log type, amount, and grade for each filtered XP transaction
-            filteredXP.forEach(tx => {
+            // Log raw values for all recent transactions
+            recentXP.forEach(tx => {
                 const type = objectTypeMap[tx.objectId] || 'unavailable'
                 const grade = objectGradeMap[tx.objectId] !== undefined ? objectGradeMap[tx.objectId] : 'N/A'
-                console.log(`Type: ${type}, XP: ${tx.amount} bytes, objectId: ${tx.objectId}, grade: ${grade}`)
+                console.log(`Type: ${type}, XP: ${tx.amount} bytes, objectId: ${tx.objectId}, grade: ${grade}, date: ${tx.createdAt}`)
             })
 
-            // so we fetch all xp for passed projects only:
-            const xpAmountBytes = filteredXP.reduce((sum, tx) => sum + tx.amount, 0)
-            document.getElementById('xp').textContent = xpAmountBytes / 1000 + ' kB'
+            // Sum XP in bytes for recent transactions
+            const xpAmountBytes = recentXP.reduce((sum, tx) => sum + tx.amount, 0)
+            document.getElementById('xp').textContent = xpAmountBytes / 1000 + ' KB'
 
 
             // SECTION 3 (progress):
@@ -217,6 +214,7 @@ class ProfileManager {
                         transaction(where: { userId: { _eq: ${userId} }, type: { _eq: "xp" } }) {
                             amount
                             objectId
+                            createdAt
                         }
                     }
                 `
