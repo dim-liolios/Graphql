@@ -121,7 +121,7 @@ class ProfileManager {
         return data.data.transaction.reduce((sum, tx) => sum + tx.amount, 0)
     }
 
-    async fetchUserXPamount(token, userId, passedProjects) {
+    async fetchUserProgress(token, userId, passedProjects) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
             method: 'POST',
             headers: {
