@@ -59,7 +59,7 @@ class ProfileManager {
             // we need to fetch the info of passed only projects:
             const objectsInfo = await this.fetchObjectsInfo(token, passedProjectsIds)
 
-            const validTypes = ["project", "piscine"] // only keep projects and exercises
+            const validTypes = ["project", "piscine", "module"] // only keep projects and exercises
             const filteredObjectIds = objectsInfo
                 .filter(obj => validTypes.includes(obj.type))
                 .map(obj => obj.id)
