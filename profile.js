@@ -30,27 +30,32 @@ class ProfileManager {
         }
         
         try {
-            // section 1 (user info):
+            // SECTION 1 (user info):
             const user = await this.fetchUserBasicInfo(token)
             if (!user) return
             document.getElementById('username').textContent = user.login
             document.getElementById('email').textContent = user.email
             
-            // section (xp) 2:
+            // SECTION 2 (xp):
             const progress = await this.fetchUserProgress(token, user.id)
             console.log('User progress:', progress)
+            // we need only passed projects (grade = 1):
             const passedProjectsIds = progress.filter(p => p.grade >= 1).map(p => p.objectId)
 
+            // so we fetch all xp for passed projects only:
             const xpAmount = await this.fetchUserXPamount(token, user.id, passedProjectsIds)
             document.getElementById('xp').textContent = Math.round(xpAmount / 1024) + ' kB'
 
-            // section 3:
+            // SECTION 3 (progress):
 
-
+            // SECTION 4 (SVG Graph 1):
             const pass = progress.filter(p => p.grade === 1).length
             const fail = progress.filter(p => p.grade === 0).length
             this.drawProjectPieChart(pass, fail)
 
+            // SECTION 5 (SVG Graph 2):
+
+            
         } catch (error) {
             console.error('Failed to load user data:', error)
         }
@@ -95,33 +100,7 @@ class ProfileManager {
         return data.data.user[0]
     }
 
-    async fetchUserXPamount(token, userId) {
-        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                query: `
-                    query {
-                        transaction(where: { userId: { _eq: ${userId} }, type: { _eq: "xp" } }) {
-                            amount
-                        }
-                    }
-                `
-            })
-        })
-        const data = await response.json()
-        if (data.errors || !data.data || !data.data.transaction) {
-            console.error('XP amount query error:', data.errors || data)
-            return 0
-        }
-        // sum all xp amounts:
-        return data.data.transaction.reduce((sum, tx) => sum + tx.amount, 0)
-    }
-
-    async fetchUserProgress(token, userId, passedProjects) {
+    async fetchUserXPamount(token, userId, passedProjects) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
             method: 'POST',
             headers: {
@@ -149,6 +128,32 @@ class ProfileManager {
         return validXP.reduce((sum, tx) => sum + tx.amount, 0)
     }
 
+    async fetchUserProgress(token, userId) {
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                        progress(where: { userId: { _eq: ${userId} } }) {
+                            grade
+                            objectId
+                        }
+                    }
+                `
+            })
+        })
+        const data = await response.json()
+        if (data.errors || !data.data || !data.data.progress) {
+            console.error('Progress query error:', data.errors || data)
+            return []
+        }
+        return data.data.progress
+    }
+
     async fetchUserTransactions(token, userId) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
             method: 'POST',
@@ -174,6 +179,7 @@ class ProfileManager {
         }
         return data.data.transaction.map(tx => tx.amount)
     }
+
 
     drawXPChart(xpArray) {
         const svg = document.getElementById('xp-chart')
