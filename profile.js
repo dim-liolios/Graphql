@@ -40,7 +40,16 @@ class ProfileManager {
             const allXPTransactions = await this.fetchUserTransactions(token, user.id)
             const allXPObjectIds = [...new Set(allXPTransactions.map(tx => tx.objectId))]
             const allXPObjectsInfo = await this.fetchObjectsInfo(token, allXPObjectIds)
-            console.log('Types of objects that gave me XP:', allXPObjectsInfo.map(obj => obj.type))
+            const objectTypeMap = {}
+            allXPObjectsInfo.forEach(obj => {
+                objectTypeMap[obj.id] = obj.type
+            })
+
+            // Log type and amount for each XP transaction
+            allXPTransactions.forEach(tx => {
+                const type = objectTypeMap[tx.objectId] || 'unavailable'
+                console.log(`Type: ${type}, XP: ${Math.round(tx.amount / 1024)} kB, objectId: ${tx.objectId}`)
+            })
 
             const progress = await this.fetchUserProgress(token, user.id)
             console.log('User progress:', progress)
