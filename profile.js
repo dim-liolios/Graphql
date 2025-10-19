@@ -44,13 +44,13 @@ class ProfileManager {
 
             // we need to fetch the info of passed only projects:
             const objectsInfo = await this.fetchObjectsInfo(token, passedProjectsIds)
-            
-            const validTypes = ["project", "exercise"] // only keep projects and exercises
+
+            const validTypes = ["project"] // only keep projects
             const filteredObjectIds = objectsInfo
                 .filter(obj => validTypes.includes(obj.type))
                 .map(obj => obj.id)
 
-            // so we fetch all xp for passed projects and exercises only:
+            // so we fetch all xp for passed projects only:
             const xpAmount = await this.fetchUserXPamount(token, user.id, filteredObjectIds)
             document.getElementById('xp').textContent = Math.round(xpAmount / 1024) + ' kB'
 
