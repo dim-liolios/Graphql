@@ -30,10 +30,17 @@ class ProfileManager {
         }
         
         try {
-            const user = await this.fetchUserInfo(token)
+            // section 1:
+            const user = await this.fetchUserBasicInfo(token)
             if (!user) return
+            document.getElementById('username').textContent = user.login
+            document.getElementById('email').textContent = user.email
+            
+            // section 2:
+            const xpAmount = await this.fetchUserXPamount(token, user.id)
+            document.getElementById('xp').textContent = xpAmount
 
-            this.displayUserData(user)
+            // section 3:
 
             const xpArray = await this.fetchUserTransactions(token, user.id)
             this.drawXPChart(xpArray)
@@ -48,10 +55,6 @@ class ProfileManager {
         }
     }
 
-    displayUserData(user) {
-        document.getElementById('username').textContent = user.login
-        document.getElementById('email').textContent = user.email
-    }
 
     switchToLogin() {
         const loginSection = document.getElementById('login-section')
@@ -64,7 +67,7 @@ class ProfileManager {
         loginSection.classList.add('active')
     }
     
-        async fetchUserInfo(token) {
+    async fetchUserBasicInfo(token) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
             method: 'POST',
             headers: {
@@ -90,6 +93,33 @@ class ProfileManager {
         }
         return data.data.user[0]
     }
+
+    async fetchUserXPamount(token, userId) {
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                        transaction(where: { userId: { _eq: ${userId} }, type: { _eq: "xp" } }) {
+                            amount
+                        }
+                    }
+                `
+            })
+        })
+        const data = await response.json()
+        if (data.errors || !data.data || !data.data.transaction) {
+            console.error('XP amount query error:', data.errors || data)
+            return 0
+        }
+        // sum all xp amounts:
+        return data.data.transaction.reduce((sum, tx) => sum + tx.amount, 0)
+    }
+
 
     async fetchUserTransactions(token, userId) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
