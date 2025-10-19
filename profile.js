@@ -37,6 +37,16 @@ class ProfileManager {
             document.getElementById('email').textContent = user.email
             
             // SECTION 2 (xp):
+            function roundXPBytes(bytes) {
+                if (bytes < 10000) {
+                    return Math.ceil(bytes / 10) * 10
+                } else if (bytes < 100000) {
+                    return Math.ceil(bytes / 100) * 100
+                } else {
+                    return Math.ceil(bytes / 1000) * 1000
+                }
+            }
+
             const progress = await this.fetchUserProgress(token, user.id)
             const objectGradeMap = {}
             progress.forEach(p => {
@@ -65,8 +75,8 @@ class ProfileManager {
             })
 
             // so we fetch all xp for passed projects only:
-            const xpAmountBytes = filteredXP.reduce((sum, tx) => sum + tx.amount, 0)
-            document.getElementById('xp').textContent = xpAmountBytes + ' bytes'
+            const xpAmountBytes = filteredXP.reduce((sum, tx) => sum + roundXPBytes(tx.amount), 0)
+            document.getElementById('xp').textContent = xpAmountBytes / 1000 + ' kB'
 
 
 
