@@ -37,51 +37,42 @@ class ProfileManager {
             document.getElementById('email').textContent = user.email
 
             // SECTION 2 (xp):
-            const progress = await this.fetchUserProgress(token, user.id)
-            const objectGradeMap = {}
-            progress.forEach(p => {
-                objectGradeMap[p.objectId] = p.grade
-            })
+            // //getting all XP transactions to filter them based on object type and date:
+            // const allXPTransactions = await this.fetchUserTransactions(token, user.id)
+            // const allXPObjectIds = [...new Set(allXPTransactions.map(tx => tx.objectId))]
+            // const allXPObjectsInfo = await this.fetchObjectsInfo(token, allXPObjectIds)
+            // const objectTypeMap = {}
+            //  allXPObjectsInfo.forEach(obj => {
+            //     objectTypeMap[obj.id] = obj.type
+            // })
+            // // filtering transactions including "project" and "module" types for any date,
+            // // "exercise" type only if date is 2024-10-29 and "piscine" type only if date is 2025-07-17
+            // const exerciseDate = '2024-10-29'
+            // const piscineDate = '2025-07-17'
+            // const validTypes = ["project", "module"]
+            // const filteredXP = allXPTransactions.filter(tx => {
+            //     const type = objectTypeMap[tx.objectId] || 'unavailable'
+            //     const txDate = tx.createdAt ? tx.createdAt.slice(0, 10) : ''
+            //     return (
+            //         validTypes.includes(type) ||
+            //         (type === "exercise" && txDate === exerciseDate) ||
+            //         (type === "piscine" && txDate === piscineDate)
+            //     )
+            // })
+            // // sum XP in bytes for filtered transactions:
+            // const xpAmountBytes = filteredXP.reduce((sum, tx) => sum + tx.amount, 0)
+            // document.getElementById('xp').textContent = Math.round(xpAmountBytes / 1000) + ' KB'
 
-            const allXPTransactions = await this.fetchUserTransactions(token, user.id)
-            const allXPObjectIds = [...new Set(allXPTransactions.map(tx => tx.objectId))]
-            const allXPObjectsInfo = await this.fetchObjectsInfo(token, allXPObjectIds)
-            const objectTypeMap = {}
-            allXPObjectsInfo.forEach(obj => {
-                objectTypeMap[obj.id] = obj.type
-            })
-
-            /*Filter transactions:
-                - Include "project" and "module" types for any date
-                - Include "exercise" type ONLY if date is 2024-10-29
-                - Include "piscine" type ONLY if date is 2025-07-17 */
-            const exerciseDate = '2024-10-29'
-            const piscineDate = '2025-07-17'
-            const validTypes = ["project", "module"]
-            const filteredXP = allXPTransactions.filter(tx => {
-                const type = objectTypeMap[tx.objectId] || 'unavailable'
-                const txDate = tx.createdAt ? tx.createdAt.slice(0, 10) : ''
-                return (
-                    validTypes.includes(type) ||
-                    (type === "exercise" && txDate === exerciseDate) ||
-                    (type === "piscine" && txDate === piscineDate)
-                )
-            })
-
-            // Log raw values for all recent transactions
-            filteredXP.forEach(tx => {
-                const type = objectTypeMap[tx.objectId] || 'unavailable'
-                const grade = objectGradeMap[tx.objectId] !== undefined ? objectGradeMap[tx.objectId] : 'N/A'
-                console.log(`Type: ${type}, XP: ${tx.amount} bytes, objectId: ${tx.objectId}, grade: ${grade}, date: ${tx.createdAt}`)
-            })
-
-            // Sum XP in bytes for recent transactions
-            const xpAmountBytes = filteredXP.reduce((sum, tx) => sum + tx.amount, 0)
+            const xpTransactions = await this.fetchUserXP(token, user.id)
+            console.log(xpTransactions)
+            const xpAmountBytes = xpTransactions.reduce((sum, tx) => sum + tx.amount, 0)
             document.getElementById('xp').textContent = Math.round(xpAmountBytes / 1000) + ' KB'
+
 
 
             // SECTION 3 (progress):
 
+            
             // SECTION 4 (SVG Graph 1):
             const pass = progress.filter(p => p.grade === 1).length
             const fail = progress.filter(p => p.grade === 0).length
@@ -107,6 +98,54 @@ class ProfileManager {
         loginSection.classList.add('active')
     }
     
+    async fetchUserXP(token, userId) {
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                        transaction(
+                            where: {
+                                userId: { _eq: ${userId} }
+                                type: { _eq: "xp" }
+                                _and: [
+                                    {
+                                        _or: [
+                                            { object: { type: { _in: ["project", "module"] } } }
+                                            { _and: [
+                                                { object: { type: { _eq: "exercise" } } }
+                                                { createdAt: { _like: "2024-10-29%" } }
+                                            ]}
+                                            { _and: [
+                                                { object: { type: { _eq: "piscine" } } }
+                                                { createdAt: { _like: "2025-07-17%" } }
+                                            ]}
+                                        ]
+                                    }
+                                ]
+                            }
+                        ) {
+                            amount
+                            objectId
+                            createdAt
+                            object { type }
+                        }
+                    }
+                `
+            })
+        })
+        const data = await response.json()
+        if (data.errors || !data.data || !data.data.transaction) {
+            console.error('XP amount query error:', data.errors || data)
+            return []
+        }
+        return data.data.transaction
+    }
+
     async fetchUserBasicInfo(token) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
             method: 'POST',
