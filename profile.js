@@ -74,9 +74,9 @@ class ProfileManager {
 
             
             // SECTION 4 (SVG Graph 1):
-            const pass = progress.filter(p => p.grade === 1).length
-            const fail = progress.filter(p => p.grade === 0).length
-            this.drawProjectPieChart(pass, fail)
+            // const pass = progress.filter(p => p.grade === 1).length
+            // const fail = progress.filter(p => p.grade === 0).length
+            // this.drawProjectPieChart(pass, fail)
 
             // SECTION 5 (SVG Graph 2):
 
