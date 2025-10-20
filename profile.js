@@ -60,7 +60,7 @@ class ProfileManager {
                     (type === "piscine" && txDate === piscineDate)
                 )
             })
-            
+
             // sum XP in bytes for filtered transactions:
             const xpAmountBytes = filteredXP.reduce((sum, tx) => sum + tx.amount, 0)
             document.getElementById('xp').textContent = Math.round(xpAmountBytes / 1000) + ' KB'
