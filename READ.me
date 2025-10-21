@@ -82,3 +82,40 @@ package.json:
     - defines our project’s metadata (name, version, main file)
     - lists dependencies (npm packages) if we use any
     - allows deployment platforms to run npm install and start our app with the correct entry point (main)
+
+=============================================================================================================
+
+
+query {
+  object(
+    where: {
+      _or: [
+        { type: { _in: ["project", "module"] } }
+        { _and: [
+            { type: { _eq: "exercise" } }
+            { createdAt: { _like: "2024-10-29%" } }
+        ]}
+        { _and: [
+            { type: { _eq: "piscine" } }
+            { createdAt: { _like: "2025-07-17%" } }
+        ]}
+      ]
+    }
+  ) {
+    id
+  }
+}
+
+query {
+  transaction(
+    where: {
+      userId: { _eq: USER_ID }
+      type: { _eq: "xp" }
+      objectId: { _in: [LIST_OF_OBJECT_IDS_FROM_STEP_1] }
+    }
+  ) {
+    amount
+    objectId
+    createdAt
+  }
+}
