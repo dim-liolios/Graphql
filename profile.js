@@ -38,6 +38,12 @@ class ProfileManager {
 
             // SECTION 2 (xp):
 
+            const objectsForXP = await this.s2FetchSpecificObjects(token)
+            console.log('Objects included in XP calculation:')
+            objectsForXP.forEach(obj => {
+                console.log(`ID: ${obj.id}, Name: ${obj.name}, Type: ${obj.type}, CreatedAt: ${obj.createdAt}`)
+            })
+            
             // getting the ids of the exercises/projects that are taken into account for xp in the platform:
             const objectIds = (await this.s2FetchSpecificObjects(token)).map(obj => obj.id)
 
