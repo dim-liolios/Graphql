@@ -38,14 +38,14 @@ class ProfileManager {
 
             // SECTION 2 (xp):
 
-            const objectsForXP = await this.s2FetchSpecificObjects(token)
+            const objectsForXP = await this.s2FetchSpecificObjects(token, user.id)
             console.log('Objects included in XP calculation:')
             objectsForXP.forEach(obj => {
                 console.log(`ID: ${obj.id}, Name: ${obj.name}, Type: ${obj.type}, CreatedAt: ${obj.createdAt}`)
             })
 
             // getting the ids of the exercises/projects that are taken into account for xp in the platform:
-            const objectIds = (await this.s2FetchSpecificObjects(token)).map(obj => obj.id)
+            const objectIds = (await this.s2FetchSpecificObjects(token, user.id)).map(obj => obj.id)
 
             // getting the total xp for these objects:
             const totalxp = await this.s2FetchObjectsXPamount(token, user.id, objectIds)
@@ -124,7 +124,7 @@ class ProfileManager {
 
 // SECTION 2 (xp):
 
-    async s2FetchSpecificObjects(token) {
+    async s2FetchSpecificObjects(token, userId) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
             method: 'POST',
             headers: {
