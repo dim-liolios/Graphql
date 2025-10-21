@@ -134,16 +134,19 @@ class ProfileManager {
                             { type: { _in: ["project", "module"] } }
                             { _and: [
                                 { type: { _eq: "exercise" } }
-                                { createdAt: { _like: "2024-10-29%" } }
+                                { createdAt: { _gte: "2024-10-29T00:00:00", _lt: "2024-10-30T00:00:00" } }
                             ]}
                             { _and: [
                                 { type: { _eq: "piscine" } }
-                                { createdAt: { _like: "2025-07-17%" } }
+                                { createdAt: { _gte: "2025-07-17T00:00:00", _lt: "2025-07-18T00:00:00" } }
                             ]}
                         ]
                         }
                     ) {
                         id
+                        name
+                        type
+                        attrs
                     }
                     }
                 `
