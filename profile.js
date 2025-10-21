@@ -144,9 +144,6 @@ class ProfileManager {
                         }
                     ) {
                         id
-                        name
-                        type
-                        attrs
                     }
                     }
                 `
