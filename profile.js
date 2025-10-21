@@ -43,7 +43,7 @@ class ProfileManager {
             objectsForXP.forEach(obj => {
                 console.log(`ID: ${obj.id}, Name: ${obj.name}, Type: ${obj.type}, CreatedAt: ${obj.createdAt}`)
             })
-            
+
             // getting the ids of the exercises/projects that are taken into account for xp in the platform:
             const objectIds = (await this.s2FetchSpecificObjects(token)).map(obj => obj.id)
 
@@ -133,28 +133,36 @@ class ProfileManager {
             },
             body: JSON.stringify({
                 query: `
-                    query {
+                query {
                     object(
                         where: {
-                        _or: [
-                            { type: { _in: ["project", "module"] } }
-                            { _and: [
-                                { type: { _eq: "exercise" } }
-                                { createdAt: { _gte: "2024-10-29T00:00:00", _lt: "2024-10-30T00:00:00" } }
-                            ]}
-                            { _and: [
-                                { type: { _eq: "piscine" } }
-                                { createdAt: { _gte: "2025-07-17T00:00:00", _lt: "2025-07-18T00:00:00" } }
-                            ]}
-                        ]
+                            _or: [
+                                { 
+                                    type: { _eq: "project" },
+                                    progress: { 
+                                        userId: { _eq: ${userId} },
+                                        grade: { _gte: 1 }
+                                    }
+                                },
+                                { type: { _eq: "module" } },
+                                { _and: [
+                                    { type: { _eq: "exercise" } },
+                                    { createdAt: { _gte: "2024-10-29T00:00:00", _lt: "2024-10-30T00:00:00" } }
+                                ]},
+                                { _and: [
+                                    { type: { _eq: "piscine" } },
+                                    { createdAt: { _gte: "2025-07-17T00:00:00", _lt: "2025-07-18T00:00:00" } }
+                                ]}
+                            ]
                         }
                     ) {
                         id
                         name
                         type
                         attrs
+                        createdAt
                     }
-                    }
+                }
                 `
             })
         })
