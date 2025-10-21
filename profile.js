@@ -42,7 +42,7 @@ class ProfileManager {
             const objectIds = (await this.s2FetchSpecificObjects(token)).map(obj => obj.id)
 
             // getting the total xp for these objects:
-            totalxp = await this.s2FetchObjectsXPamount(token, user.id, objectIds)
+            const totalxp = await this.s2FetchObjectsXPamount(token, user.id, objectIds)
 
             // sum XP in bytes for filtered transactions:
             const xpAmountBytes = totalxp.reduce((sum, tx) => sum + tx.amount, 0)
