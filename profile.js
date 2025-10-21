@@ -31,38 +31,40 @@ class ProfileManager {
         
         try {
             // SECTION 1 (user info):
-            const user = await this.fetchUserBasicInfo(token)
+            const user = await this.s1FetchUserBasicInfo(token)
             if (!user) return
             document.getElementById('username').textContent = user.login
             document.getElementById('email').textContent = user.email
 
             // SECTION 2 (xp):
             //getting all XP transactions to filter them based on object type and date:
-            const allXPTransactions = await this.fetchUserTransactions(token, user.id)
-            const allXPObjectIds = [...new Set(allXPTransactions.map(tx => tx.objectId))]
-            const allXPObjectsInfo = await this.fetchObjectsInfo(token, allXPObjectIds)
-            const objectTypeMap = {}
-             allXPObjectsInfo.forEach(obj => {
-                objectTypeMap[obj.id] = obj.type
-            })
+            // const allXPTransactions = await this.fetchUserTransactions(token, user.id)
+            // const allXPObjectIds = [...new Set(allXPTransactions.map(tx => tx.objectId))]
+            // const allXPObjectsInfo = await this.fetchObjectsInfo(token, allXPObjectIds)
+            // const objectTypeMap = {}
+            //  allXPObjectsInfo.forEach(obj => {
+            //     objectTypeMap[obj.id] = obj.type
+            // })
+            // // filtering transactions including "project" and "module" types for any date,
+            // // "exercise" type only if date is 2024-10-29 and "piscine" type only if date is 2025-07-17
+            // const exerciseDate = '2024-10-29'
+            // const piscineDate = '2025-07-17'
+            // const validTypes = ["project", "module"]
+            // const filteredXP = allXPTransactions.filter(tx => {
+            //     const type = objectTypeMap[tx.objectId] || 'unavailable'
+            //     const txDate = tx.createdAt ? tx.createdAt.slice(0, 10) : ''
+            //     return (
+            //         validTypes.includes(type) ||
+            //         (type === "exercise" && txDate === exerciseDate) ||
+            //         (type === "piscine" && txDate === piscineDate)
+            //     )
+            // })
 
-            // filtering transactions including "project" and "module" types for any date,
-            // "exercise" type only if date is 2024-10-29 and "piscine" type only if date is 2025-07-17
-            const exerciseDate = '2024-10-29'
-            const piscineDate = '2025-07-17'
-            const validTypes = ["project", "module"]
-            const filteredXP = allXPTransactions.filter(tx => {
-                const type = objectTypeMap[tx.objectId] || 'unavailable'
-                const txDate = tx.createdAt ? tx.createdAt.slice(0, 10) : ''
-                return (
-                    validTypes.includes(type) ||
-                    (type === "exercise" && txDate === exerciseDate) ||
-                    (type === "piscine" && txDate === piscineDate)
-                )
-            })
+            const objectIds = (await this.s2FetchSpecificObjects(token)).map(obj => obj.id)
+            totalxp = await this.s2FetchObjectsXPamount(token, user.id, objectIds)
 
             // sum XP in bytes for filtered transactions:
-            const xpAmountBytes = filteredXP.reduce((sum, tx) => sum + tx.amount, 0)
+            const xpAmountBytes = totalxp.reduce((sum, tx) => sum + tx.amount, 0)
             document.getElementById('xp').textContent = Math.round(xpAmountBytes / 1000) + ' KB'
 
 
@@ -82,7 +84,6 @@ class ProfileManager {
         }
     }
 
-
     switchToLogin() {
         const loginSection = document.getElementById('login-section')
         const profileSection = document.getElementById('profile-section')
@@ -94,7 +95,12 @@ class ProfileManager {
         loginSection.classList.add('active')
     }
 
-    async fetchUserBasicInfo(token) {
+//                            HELPER FUNCTIONS FOR DATA FETCHING AND UI UPDATES
+// ------------------------------------------------------------------------------------------------------------
+
+// SECTION 1(user info):
+
+    async s1FetchUserBasicInfo(token) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
             method: 'POST',
             headers: {
@@ -121,7 +127,9 @@ class ProfileManager {
         return data.data.user[0]
     }
 
-    async fetchUserXPamount(token, userId) {
+// SECTION 2 (xp):
+
+    async s2FetchSpecificObjects(token) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
             method: 'POST',
             headers: {
@@ -131,10 +139,56 @@ class ProfileManager {
             body: JSON.stringify({
                 query: `
                     query {
-                        transaction(where: { userId: { _eq: ${userId} }, type: { _eq: "xp" } }) {
-                            amount
-                            objectId
+                    object(
+                        where: {
+                        _or: [
+                            { type: { _in: ["project", "module"] } }
+                            { _and: [
+                                { type: { _eq: "exercise" } }
+                                { createdAt: { _like: "2024-10-29%" } }
+                            ]}
+                            { _and: [
+                                { type: { _eq: "piscine" } }
+                                { createdAt: { _like: "2025-07-17%" } }
+                            ]}
+                        ]
                         }
+                    ) {
+                        id
+                    }
+                    }
+                `
+            })
+        })
+        const data = await response.json()
+        if (data.errors || !data.data || !data.data.object) {
+            console.error('Object info query error:', data.errors || data)
+            return []
+        }
+        return data.data.object
+    }
+
+    async s2FetchObjectsXPamount(token, userId, objectIds) {
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                    transaction(
+                        where: {
+                        userId: { _eq: ${userId} }
+                        type: { _eq: "xp" }
+                        objectId: { _in: [${objectIds.join(',')}] }
+                        }
+                    ) {
+                        amount
+                        objectId
+                        createdAt
+                    }
                     }
                 `
             })
@@ -144,9 +198,12 @@ class ProfileManager {
             console.error('XP amount query error:', data.errors || data)
             return 0
         }
-        // Sum ALL XP transactions (including bonuses)
-        return data.data.transaction.reduce((sum, tx) => sum + tx.amount, 0)
+        // Sum ALL XP transactions
+        return data.data.transaction
     }
+
+// SECTION 3 (Audits):
+
 
     async fetchUserProgress(token, userId) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
@@ -226,10 +283,7 @@ class ProfileManager {
             return []
         }
         return data.data.transaction // <-- return the whole transaction, not just amount
-}
-
-
-
+    }
 
     drawXPChart(xpArray) {
         const svg = document.getElementById('xp-chart')
