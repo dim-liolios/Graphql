@@ -37,30 +37,11 @@ class ProfileManager {
             document.getElementById('email').textContent = user.email
 
             // SECTION 2 (xp):
-            //getting all XP transactions to filter them based on object type and date:
-            // const allXPTransactions = await this.fetchUserTransactions(token, user.id)
-            // const allXPObjectIds = [...new Set(allXPTransactions.map(tx => tx.objectId))]
-            // const allXPObjectsInfo = await this.fetchObjectsInfo(token, allXPObjectIds)
-            // const objectTypeMap = {}
-            //  allXPObjectsInfo.forEach(obj => {
-            //     objectTypeMap[obj.id] = obj.type
-            // })
-            // // filtering transactions including "project" and "module" types for any date,
-            // // "exercise" type only if date is 2024-10-29 and "piscine" type only if date is 2025-07-17
-            // const exerciseDate = '2024-10-29'
-            // const piscineDate = '2025-07-17'
-            // const validTypes = ["project", "module"]
-            // const filteredXP = allXPTransactions.filter(tx => {
-            //     const type = objectTypeMap[tx.objectId] || 'unavailable'
-            //     const txDate = tx.createdAt ? tx.createdAt.slice(0, 10) : ''
-            //     return (
-            //         validTypes.includes(type) ||
-            //         (type === "exercise" && txDate === exerciseDate) ||
-            //         (type === "piscine" && txDate === piscineDate)
-            //     )
-            // })
 
+            // getting the ids of the exercises/projects that are taken into account for xp in the platform:
             const objectIds = (await this.s2FetchSpecificObjects(token)).map(obj => obj.id)
+
+            // getting the total xp for these objects:
             totalxp = await this.s2FetchObjectsXPamount(token, user.id, objectIds)
 
             // sum XP in bytes for filtered transactions:
@@ -68,9 +49,17 @@ class ProfileManager {
             document.getElementById('xp').textContent = Math.round(xpAmountBytes / 1000) + ' KB'
 
 
-            // SECTION 3 (progress):
+            // SECTION 3 (skills):
+            const skillObjects = await this.s2FetchSpecificObjects(token)
+            const skillsList = document.getElementById('skills')
+            // skillsList.innerHTML = '' // Clear previous content
 
-            
+            skillObjects.forEach(obj => {
+                const li = document.createElement('li')
+                li.textContent = typeof obj.attrs === 'string' ? obj.attrs : JSON.stringify(obj.attrs)
+                skillsList.appendChild(li)
+            })
+
             // SECTION 4 (SVG Graph 1):
             // const pass = progress.filter(p => p.grade === 1).length
             // const fail = progress.filter(p => p.grade === 0).length
@@ -155,6 +144,9 @@ class ProfileManager {
                         }
                     ) {
                         id
+                        name
+                        type
+                        attrs
                     }
                     }
                 `
@@ -196,94 +188,16 @@ class ProfileManager {
         const data = await response.json()
         if (data.errors || !data.data || !data.data.transaction) {
             console.error('XP amount query error:', data.errors || data)
-            return 0
+            return []
         }
         // Sum ALL XP transactions
         return data.data.transaction
     }
 
-// SECTION 3 (Audits):
+// SECTION 3 (skills):
 
 
-    async fetchUserProgress(token, userId) {
-        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                query: `
-                    query {
-                        progress(where: { userId: { _eq: ${userId} } }) {
-                            grade
-                            objectId
-                        }
-                    }
-                `
-            })
-        })
-        const data = await response.json()
-        if (data.errors || !data.data || !data.data.progress) {
-            console.error('Progress query error:', data.errors || data)
-            return []
-        }
-        return data.data.progress
-    }
 
-    async fetchObjectsInfo(token, objectIds) {
-        if (!objectIds.length) return []
-        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                query: `
-                    query {
-                        object(where: { id: { _in: [${objectIds.join(',')}] } }) {
-                            id
-                            type
-                        }
-                    }
-                `
-            })
-        })
-        const data = await response.json()
-        if (data.errors || !data.data || !data.data.object) {
-            console.error('Object info query error:', data.errors || data)
-            return []
-        }
-        return data.data.object
-    }
-
-    async fetchUserTransactions(token, userId) {
-        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                query: `
-                    query {
-                        transaction(where: { userId: { _eq: ${userId} }, type: { _eq: "xp" } }) {
-                            amount
-                            objectId
-                            createdAt
-                        }
-                    }
-                `
-            })
-        })
-        const data = await response.json()
-        if (data.errors || !data.data || !data.data.transaction) {
-            console.error('Transaction query error:', data.errors || data)
-            return []
-        }
-        return data.data.transaction // <-- return the whole transaction, not just amount
-    }
 
     drawXPChart(xpArray) {
         const svg = document.getElementById('xp-chart')
