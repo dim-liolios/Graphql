@@ -37,12 +37,7 @@ class ProfileManager {
             document.getElementById('email').textContent = user.email
 
             // SECTION 2 (xp):
-
-            // getting the ids of the exercises/projects that are taken into account for xp in the platform:
-            // const objectIds = (await this.s2FetchSpecificObjects(token, user.id)).map(obj => obj.id)
-
-
-            // getting the total xp for these objects:
+           
             const totalxp = await this.s2FetchObjectsXPamount(token, user.id)
 
             // sum XP in bytes for filtered transactions:
@@ -119,44 +114,6 @@ class ProfileManager {
 
 // SECTION 2 (xp):
 
-    // async s2FetchSpecificObjects(token, userId) {
-    // const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
-    //     method: 'POST',
-    //     headers: {
-    //     'Authorization': `Bearer ${token}`,
-    //     'Content-Type': 'application/json'
-    //     },
-    //     body: JSON.stringify({
-    //         query: `
-    //             query {
-    //                 object(
-    //                     where: {
-    //                         _or: [
-    //                             { type: { _eq: "project" } },
-    //                             { type: { _eq: "exercise" } },
-    //                             { type: { _eq: "module" } },
-    //                             { type: { _eq: "piscine" } },
-
-    //                         ]
-    //                     }
-    //                 ) {
-    //                     id
-    //                     name
-    //                     type
-    //                     createdAt
-    //                 }
-    //             }
-    //         `
-    //     })
-    // })
-    // const data = await response.json()
-    // if (data.errors || !data.data || !data.data.object) {
-    //     console.error('Object info query error:', data.errors || data)
-    //     return []
-    // }
-    // return data.data.object
-    // }
-
     async s2FetchObjectsXPamount(token, userId) {
         const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
             method: 'POST',
@@ -172,8 +129,7 @@ class ProfileManager {
                             _and: [
                                 { userId: { _eq: ${userId} } },
                                 { type: { _eq: "xp" } },
-                                { eventId: { _eq: 200} },
-                                { createdAt: { _gte: "2024-10-15T00:00:00+00:00" } }
+                                { eventId: { _eq: 200} }
                             ]
                             }
                         ) {
