@@ -133,36 +133,29 @@ class ProfileManager {
             },
             body: JSON.stringify({
                 query: `
-                query {
-                    object(
-                        where: {
-                            _or: [
-                                { 
-                                    type: { _eq: "project" },
-                                    progress: { 
-                                        userId: { _eq: ${userId} },
-                                        grade: { _gte: 1 }
-                                    }
-                                },
-                                { type: { _eq: "module" } },
-                                { _and: [
-                                    { type: { _eq: "exercise" } },
-                                    { createdAt: { _gte: "2024-10-29T00:00:00", _lt: "2024-10-30T00:00:00" } }
-                                ]},
-                                { _and: [
-                                    { type: { _eq: "piscine" } },
-                                    { createdAt: { _gte: "2025-07-17T00:00:00", _lt: "2025-07-18T00:00:00" } }
-                                ]}
-                            ]
+                    query {
+                        object(
+                            where: {
+                                _or: [
+                                    { type: { _eq: "project" } },
+                                    { type: { _eq: "module" } },
+                                    { _and: [
+                                        { type: { _eq: "exercise" } },
+                                        { createdAt: { _gte: "2024-10-29T00:00:00", _lt: "2024-10-30T00:00:00" } }
+                                    ]},
+                                    { _and: [
+                                        { type: { _eq: "piscine" } },
+                                        { createdAt: { _gte: "2025-07-17T00:00:00", _lt: "2025-07-18T00:00:00" } }
+                                    ]}
+                                ]
+                            }
+                        ) {
+                            id
+                            name
+                            type
+                            createdAt
                         }
-                    ) {
-                        id
-                        name
-                        type
-                        attrs
-                        createdAt
                     }
-                }
                 `
             })
         })
