@@ -140,21 +140,45 @@ class ProfileManager {
         'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-        query: `query {
-            object(
-            where: {
-                _and: [
-                { type: { _eq: "project" } },
-                { createdAt: { _gte: "2024-10-15T00:00:00+00:00" } }
-                ]
-            }
-            ) {
-            id
-            name
-            type
-            createdAt
-            }
-        }`
+            query: `
+                query {
+                    object(
+                    where: {
+                        _or: [
+                        { 
+                            _and: [
+                            { type: { _eq: "project" } },
+                            { createdAt: { _gte: "2024-10-15T00:00:00+00:00" } }
+                            ]
+                        },
+                        { 
+                            _and: [
+                            { type: { _eq: "exercise" } },
+                            { createdAt: { _gte: "2024-10-29T00:00:00+00:00", _lt: "2024-10-30T00:00:00+00:00" } }
+                            ]
+                        },
+                        { 
+                            _and: [
+                            { type: { _eq: "module" } },
+                            { createdAt: { _gte: "2024-10-15T00:00:00+00:00" } }
+                            ]
+                        },
+                        { 
+                            _and: [
+                            { type: { _eq: "piscine" } },
+                            { name: { _eq: "Piscine JS" } }
+                            ]
+                        }
+                        ]
+                    }
+                    ) {
+                    id
+                    name
+                    type
+                    createdAt
+                    }
+                }
+            `
         })
     })
     const data = await response.json()
