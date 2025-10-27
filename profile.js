@@ -37,7 +37,8 @@ class ProfileManager {
             document.getElementById('email').textContent = user.email
 
             // SECTION 2 (xp):
-
+            const objectsForXP = await this.s2FetchSpecificObjects(token, user.id)
+            
             // getting the ids of the exercises/projects that are taken into account for xp in the platform:
             const objectIds = (await this.s2FetchSpecificObjects(token, user.id)).map(obj => obj.id)
 
