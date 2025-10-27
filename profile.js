@@ -37,26 +37,13 @@ class ProfileManager {
             document.getElementById('email').textContent = user.email
 
             // SECTION 2 (xp):
-            const objectsForXP = await this.s2FetchSpecificObjects(token, user.id)
 
             // getting the ids of the exercises/projects that are taken into account for xp in the platform:
             const objectIds = (await this.s2FetchSpecificObjects(token, user.id)).map(obj => obj.id)
-            console.log('Object IDs sent to transaction query:', objectIds)
 
 
             // getting the total xp for these objects:
             const totalxp = await this.s2FetchObjectsXPamount(token, user.id, objectIds)
-            console.log('XP transactions returned:', totalxp)
-
-            console.log('XP transactions included in calculation:')
-            totalxp.forEach(tx => {
-                // Optionally, find the object info for this transaction
-                const obj = objectsForXP.find(obj => obj.id === tx.objectId)
-                const objInfo = obj
-                    ? `Name: ${obj.name}, Type: ${obj.type}, CreatedAt: ${obj.createdAt}`
-                    : 'Object not found'
-                console.log(`ObjectID: ${tx.objectId}, XP: ${tx.amount}, ${objInfo}`)
-            })
 
             // sum XP in bytes for filtered transactions:
             const xpAmountBytes = totalxp.reduce((sum, tx) => sum + tx.amount, 0)
@@ -143,39 +130,20 @@ class ProfileManager {
             query: `
                 query {
                     object(
-                    where: {
-                        _or: [
-                        { 
-                            _and: [
-                            { type: { _eq: "project" } },
-                            { createdAt: { _gte: "2024-10-15T00:00:00+00:00" } }
-                            ]
-                        },
-                        { 
-                            _and: [
-                            { type: { _eq: "exercise" } },
-                            { createdAt: { _gte: "2024-10-29T00:00:00+00:00", _lt: "2024-10-30T00:00:00+00:00" } }
-                            ]
-                        },
-                        { 
-                            _and: [
-                            { type: { _eq: "module" } },
-                            { createdAt: { _gte: "2024-10-15T00:00:00+00:00" } }
-                            ]
-                        },
-                        { 
-                            _and: [
-                            { type: { _eq: "piscine" } },
-                            { name: { _eq: "Piscine JS" } }
+                        where: {
+                            _or: [
+                                { type: { _eq: "project" } },
+                                { type: { _eq: "exercise" } },
+                                { type: { _eq: "module" } },
+                                { type: { _eq: "piscine" } },
+
                             ]
                         }
-                        ]
-                    }
                     ) {
-                    id
-                    name
-                    type
-                    createdAt
+                        id
+                        name
+                        type
+                        createdAt
                     }
                 }
             `
@@ -199,17 +167,18 @@ class ProfileManager {
             body: JSON.stringify({
                 query: `
                     query {
-                    transaction(
-                        where: {
-                        userId: { _eq: ${userId} }
-                        type: { _eq: "xp" }
-                        objectId: { _in: [${objectIds.join(',')}] }
+                        transaction(
+                            where: {
+                                userId: { _eq: ${userId} }
+                                type: { _eq: "xp" }
+                                objectId: { _in: [${objectIds.join(',')}] }
+                                createdAt: { _gte: "2024-10-15T00:00:00+00:00" }
+                            }
+                        ) {
+                            amount
+                            objectId
+                            createdAt
                         }
-                    ) {
-                        amount
-                        objectId
-                        createdAt
-                    }
                     }
                 `
             })
@@ -219,7 +188,6 @@ class ProfileManager {
             console.error('XP amount query error:', data.errors || data)
             return []
         }
-        // Sum ALL XP transactions
         return data.data.transaction
     }
 
