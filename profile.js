@@ -38,17 +38,21 @@ class ProfileManager {
 
             // SECTION 2 (xp):
 
-            const objectsForXP = await this.s2FetchSpecificObjects(token, user.id)
-            console.log('Objects included in XP calculation:')
-            objectsForXP.forEach(obj => {
-                console.log(`ID: ${obj.id}, Name: ${obj.name}, Type: ${obj.type}, CreatedAt: ${obj.createdAt}`)
-            })
-
             // getting the ids of the exercises/projects that are taken into account for xp in the platform:
             const objectIds = (await this.s2FetchSpecificObjects(token, user.id)).map(obj => obj.id)
 
             // getting the total xp for these objects:
             const totalxp = await this.s2FetchObjectsXPamount(token, user.id, objectIds)
+
+            console.log('XP transactions included in calculation:')
+            totalxp.forEach(tx => {
+                // Optionally, find the object info for this transaction
+                const obj = objectsForXP.find(obj => obj.id === tx.objectId)
+                const objInfo = obj
+                    ? `Name: ${obj.name}, Type: ${obj.type}, CreatedAt: ${obj.createdAt}`
+                    : 'Object not found'
+                console.log(`ObjectID: ${tx.objectId}, XP: ${tx.amount}, ${objInfo}`)
+            })
 
             // sum XP in bytes for filtered transactions:
             const xpAmountBytes = totalxp.reduce((sum, tx) => sum + tx.amount, 0)
@@ -137,16 +141,22 @@ class ProfileManager {
                         object(
                             where: {
                                 _or: [
-                                    { type: { _eq: "project" } },
-                                    { type: { _eq: "module" } },
-                                    { _and: [
-                                        { type: { _eq: "exercise" } },
-                                        { createdAt: { _gte: "2024-10-29T00:00:00", _lt: "2024-10-30T00:00:00" } }
-                                    ]},
-                                    { _and: [
-                                        { type: { _eq: "piscine" } },
-                                        { createdAt: { _gte: "2025-07-17T00:00:00", _lt: "2025-07-18T00:00:00" } }
-                                    ]}
+                                    { 
+                                        type: { _eq: "project" },
+                                        createdAt: { _gte: "2024-10-15T00:00:00" }
+                                    },
+                                    { 
+                                        type: { _eq: "exercise" },
+                                        createdAt: { _gte: "2024-10-29T00:00:00", _lt: "2024-10-30T00:00:00" }
+                                    },
+                                    { 
+                                        type: { _eq: "module" },
+                                        createdAt: { _gte: "2024-10-15T00:00:00" }
+                                    },
+                                    { 
+                                        type: { _eq: "piscine" },
+                                        name: { _eq: "Piscine JS" }
+                                    }
                                 ]
                             }
                         ) {
