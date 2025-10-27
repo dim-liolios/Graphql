@@ -140,23 +140,10 @@ class ProfileManager {
         'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-        query: `query {
-            object(
-            where: {
-                _and: [
-                { type: { _eq: "project" } },
-                { createdAt: { _gte: "2024-10-15T00:00:00+00:00" } }
-                ]
-            }
-            ) {
-            id
-            name
-            type
-            createdAt
-            }
-        }`
+        query: `query { object(where: {_and:[{type:{_eq:"project"}},{createdAt:{_gte:"2024-10-15T00:00:00+00:00"}}]}) { id name type createdAt } }`
         })
     })
+    
     const data = await response.json()
     if (data.errors || !data.data || !data.data.object) {
         console.error('Object info query error:', data.errors || data)
