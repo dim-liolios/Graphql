@@ -133,38 +133,36 @@ class ProfileManager {
 // SECTION 2 (xp):
 
     async s2FetchSpecificObjects(token, userId) {
-        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-            query: `
-                query {
-                    object(
-                    where: {
-                        _and: [
-                        { type: { _eq: "project" } },
-                        { createdAt: { _gte: "2024-10-15T00:00:00+00:00" } }
-                        ]
-                    }
-                    ) {
-                    id
-                    name
-                    type
-                    createdAt
-                    }
-                }
-            `
-            })
+    const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+        method: 'POST',
+        headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+        query: `query {
+            object(
+            where: {
+                _and: [
+                { type: { _eq: "project" } },
+                { createdAt: { _gte: "2024-10-15T00:00:00+00:00" } }
+                ]
+            }
+            ) {
+            id
+            name
+            type
+            createdAt
+            }
+        }`
         })
-        const data = await response.json()
-        if (data.errors || !data.data || !data.data.object) {
-            console.error('Object info query error:', data.errors || data)
-            return []
-        }
-        return data.data.object
+    })
+    const data = await response.json()
+    if (data.errors || !data.data || !data.data.object) {
+        console.error('Object info query error:', data.errors || data)
+        return []
+    }
+    return data.data.object
     }
 
     async s2FetchObjectsXPamount(token, userId, objectIds) {
