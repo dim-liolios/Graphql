@@ -37,23 +37,26 @@ class ProfileManager {
             document.getElementById('email').textContent = user.email
 
             // SECTION 2 (xp):
-           
             const totalxp = await this.s2FetchObjectsXPamount(token, user.id)
-
             // sum XP in bytes for filtered transactions:
             const xpAmountBytes = totalxp.reduce((sum, tx) => sum + tx.amount, 0)
             document.getElementById('xp').textContent = Math.round(xpAmountBytes / 1000) + ' KB'
 
+            // SECTION 3 (latest audits):
 
-            // SECTION 3 (skills):
-            const skillObjects = await this.s2FetchSpecificObjects(token)
-            const skillsList = document.getElementById('skills')
-            // skillsList.innerHTML = '' // Clear previous content
+            const audits = await this.s3FetchLatestAudits(token, user.id)
+            const auditsContainer = document.getElementById('audits')
+            auditsContainer.innerHTML = ''
 
-            skillObjects.forEach(obj => {
-                const li = document.createElement('li')
-                li.textContent = typeof obj.attrs === 'string' ? obj.attrs : JSON.stringify(obj.attrs)
-                skillsList.appendChild(li)
+            audits.forEach(audit => {
+                const auditElement = document.createElement('div')
+                auditElement.classList.add('audit')
+                auditElement.innerHTML = `
+                    <p><strong>Project:</strong> ${audit.group.object.name}</p>
+                    <p><strong>Date:</strong> ${new Date(audit.createdAt).toLocaleString()}</p>
+                    <p><strong>Grade:</strong> ${audit.grade === 1 ? 'passed' : audit.grade}</p>
+                `
+                auditsContainer.appendChild(auditElement)
             })
 
             // SECTION 4 (SVG Graph 1):
@@ -150,10 +153,48 @@ class ProfileManager {
         return data.data.transaction
     }
 
-// SECTION 3 (skills):
+// SECTION 3 (latest audits):
 
+    async s3FetchLatestAudits(token, userId) {
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                    audit(
+                        where: { auditorId: { _eq: ${userId} }, grade: { _eq: 1 } }
+                        order_by: { createdAt: desc }
+                        limit: 5
+                    ) {
+                        id
+                        grade
+                        createdAt
+                        group {
+                        id
+                        object {
+                            id
+                            name
+                            type
+                        }
+                        }
+                    }
+                    }
+                `
+            })
+        })
+        const data = await response.json()
+        if (data.errors || !data.data || !data.data.audit) {
+            console.error('Audit query error:', data.errors || data)
+            return []
+        }
+        return data.data.audit
+    }
 
-
+// SECTIONS 4 & 5 (SVG graphs):
 
     drawXPChart(xpArray) {
         const svg = document.getElementById('xp-chart')
