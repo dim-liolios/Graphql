@@ -52,9 +52,15 @@ class ProfileManager {
                 const auditElement = document.createElement('div')
                 auditElement.classList.add('audit')
                 auditElement.innerHTML = `
-                    <p><strong>Project:</strong> ${audit.group.object.name}</p>
-                    <p><strong>Date:</strong> ${new Date(audit.createdAt).toLocaleString()}</p>
-                    <p><strong>Grade:</strong> ${audit.grade === 1 ? 'passed' : audit.grade}</p>
+                    <div class="audit-card">
+                        <div class="audit-title">${audit.group.object.name}</div>
+                        <div class="audit-meta">
+                            <span class="audit-date">${new Date(audit.createdAt).toLocaleString()}</span>
+                            <span class="audit-grade ${audit.grade === 1 ? 'passed' : ''}">
+                                ${audit.grade === 1 ? 'Passed' : audit.grade}
+                            </span>
+                        </div>
+                    </div>
                 `
                 auditsContainer.appendChild(auditElement)
             })

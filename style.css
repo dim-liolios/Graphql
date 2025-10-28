@@ -164,6 +164,40 @@ body {
     margin-top: 10px;
 }
 
+/* Audit Card Styling */
+.audit-card {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.07);
+    transition: box-shadow 0.2s;
+}
+.audit-card:hover {
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.13);
+}
+.audit-title {
+    font-size: 1.15rem;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 8px;
+}
+.audit-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.98rem;
+    color: #555;
+}
+.audit-grade.passed {
+    color: #4caf50;
+    font-weight: bold;
+}
+.audit-date {
+    font-style: italic;
+}
+
 /* Statistics Section */
 .stats-section {
     margin-top: 40px;
