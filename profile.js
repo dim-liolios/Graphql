@@ -77,25 +77,21 @@ class ProfileManager {
                 const month = new Date(tx.createdAt).toISOString().slice(0, 7)
                 xpByMonth[month] = (xpByMonth[month] || 0) + tx.amount
             })
-            // Sort months chronologically
-            const months = Object.keys(xpByMonth).sort()
-            const xpArray = months.map(month => xpByMonth[month])
 
-            // Draw the SVG bar chart
+            const now = new Date()
+            let startMonth
+            if (totalxp.length) {
+                // Find the earliest createdAt date in totalxp
+                const minDate = new Date(Math.min(...totalxp.map(tx => new Date(tx.createdAt))))
+                startMonth = new Date(minDate.getFullYear(), minDate.getMonth(), 1)
+            } else {
+                // Fallback to current month if no XP
+                startMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+            }
+            const months = this.getAllMonths(startMonth, now)
+            const xpArray = months.map(month => xpByMonth[month] || 0)
+
             this.drawXPChart(xpArray, months)
-
-            // Optionally, add month labels below bars:
-            const svg = document.getElementById('xp-chart')
-            months.forEach((month, i) => {
-                const x = 50 + i * (40 + 10) + 20 // barWidth/2 for center
-                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-                label.setAttribute('x', x)
-                label.setAttribute('y', 295)
-                label.setAttribute('text-anchor', 'middle')
-                label.setAttribute('font-size', '12px')
-                label.textContent = month
-                svg.appendChild(label)
-            })
 
             // SECTION 5 (SVG Graph 2):
 
@@ -222,6 +218,18 @@ class ProfileManager {
     }
 
 // SECTIONS 4 (SVG graph for XP over time):
+    getAllMonths(from, to) {
+        const months = []
+        let current = new Date(from.getFullYear(), from.getMonth(), 1)
+        const end = new Date(to.getFullYear(), to.getMonth(), 1)
+        while (current <= end) {
+            const year = current.getFullYear()
+            const month = String(current.getMonth() + 1).padStart(2, '0')
+            months.push(`${year}-${month}`)
+            current.setMonth(current.getMonth() + 1)
+        }
+        return months
+    }
 
     drawXPChart(xpArray, months) {
         const svg = document.getElementById('xp-chart')
@@ -256,13 +264,16 @@ class ProfileManager {
             value.textContent = Math.round(xp / 1000) + ' KB'
             svg.appendChild(value)
 
-            // Draw month label below bar
+            // Draw rotated, abbreviated month label below bar
             const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+            const [year, month] = months[i].split('-')
+            const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+            label.textContent = `${monthNames[parseInt(month, 10) - 1]}/${year.slice(2)}`
             label.setAttribute('x', x + barWidth / 2)
-            label.setAttribute('y', 295)
-            label.setAttribute('text-anchor', 'middle')
+            label.setAttribute('y', 310)
+            label.setAttribute('text-anchor', 'end')
             label.setAttribute('font-size', '12px')
-            label.textContent = months[i].slice(5) + '/' + months[i].slice(0, 4) // MM/YYYY
+            label.setAttribute('transform', `rotate(-45, ${x + barWidth / 2}, 310)`)
             svg.appendChild(label)
         })
 
