@@ -198,6 +198,27 @@ body {
     font-style: italic;
 }
 
+.user-card {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.07);
+    transition: box-shadow 0.2s;
+}
+.user-card:hover {
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.13);
+}
+.user-card p {
+    margin-bottom: 8px;
+    font-size: 1rem;
+    color: #555;
+}
+.user-card strong {
+    color: #667eea;
+}
+
 /* Statistics Section */
 .stats-section {
     margin-top: 40px;

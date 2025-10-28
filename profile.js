@@ -33,8 +33,14 @@ class ProfileManager {
             // SECTION 1 (user info):
             const user = await this.s1FetchUserBasicInfo(token)
             if (!user) return
-            document.getElementById('username').textContent = user.login
-            document.getElementById('email').textContent = user.email
+
+            const attrs = user.attrs || {}
+            document.getElementById('first-name').textContent = attrs.firstName || ''
+            document.getElementById('last-name').textContent = attrs.lastName || ''
+            document.getElementById('date-of-birth').textContent = attrs.dateOfBirth
+                ? new Date(attrs.dateOfBirth).toLocaleDateString()
+                : ''
+            document.getElementById('place-of-birth').textContent = attrs.placeOfBirth || ''
 
             // SECTION 2 (xp):
             const totalxp = await this.s2FetchObjectsXPamount(token, user.id)
@@ -66,9 +72,6 @@ class ProfileManager {
             })
 
             // SECTION 4 (SVG Graph 1):
-            // const pass = progress.filter(p => p.grade === 1).length
-            // const fail = progress.filter(p => p.grade === 0).length
-            // this.drawProjectPieChart(pass, fail)
 
             // SECTION 5 (SVG Graph 2):
 
@@ -107,7 +110,7 @@ class ProfileManager {
                         user {
                             id
                             login
-                            email
+                            attrs
                         }
                     }
                 `
@@ -176,15 +179,11 @@ class ProfileManager {
                         order_by: { createdAt: desc }
                         limit: 5
                     ) {
-                        id
                         grade
                         createdAt
                         group {
-                        id
-                        object {
-                            id
-                            name
-                            type
+                            object {
+                                name
                         }
                         }
                     }
