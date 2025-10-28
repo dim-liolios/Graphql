@@ -232,12 +232,13 @@ class ProfileManager {
     }
 
     drawXPChart(xpArray, months) {
+        const barWidth = 40
+        const svgWidth = 60 + months.length * (barWidth + 10)
         const svg = document.getElementById('xp-chart')
+        svg.setAttribute('width', svgWidth)
         svg.innerHTML = ''
         if (!xpArray.length) return
 
-        const barWidth = 40
-        const maxHeight = 250
         const maxXP = Math.max(...xpArray)
 
         xpArray.forEach((xp, i) => {
@@ -291,7 +292,7 @@ class ProfileManager {
         const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line')
         xAxis.setAttribute('x1', 40)
         xAxis.setAttribute('y1', 280)
-        xAxis.setAttribute('x2', 400)
+        xAxis.setAttribute('x2', 50 + months.length * (barWidth + 10))
         xAxis.setAttribute('y2', 280)
         xAxis.setAttribute('stroke', '#aaa')
         xAxis.setAttribute('stroke-width', '2')
