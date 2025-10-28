@@ -232,6 +232,7 @@ class ProfileManager {
     }
 
     drawXPChart(xpArray, months) {
+        const maxHeight = 250
         const barWidth = 40
         const svgWidth = 60 + months.length * (barWidth + 10)
         const svg = document.getElementById('xp-chart')
