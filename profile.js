@@ -30,7 +30,7 @@ class ProfileManager {
         }
         
         try {
-            // SECTION 1 (user info):
+            // SECTION 1 (user info): -----------------------------------------------------------------------
             const user = await this.s1FetchUserBasicInfo(token)
             if (!user) return
 
@@ -38,18 +38,17 @@ class ProfileManager {
             document.getElementById('first-name').textContent = attrs.firstName || ''
             document.getElementById('last-name').textContent = attrs.lastName || ''
             document.getElementById('date-of-birth').textContent = attrs.dateOfBirth
-                ? new Date(attrs.dateOfBirth).toLocaleDateString()
+                ? new Date(attrs.dateOfBirth).toLocaleDateString('en-GB')
                 : ''
             document.getElementById('place-of-birth').textContent = attrs.placeOfBirth || ''
 
-            // SECTION 2 (xp):
+            // SECTION 2 (xp): ------------------------------------------------------------------------------
             const totalxp = await this.s2FetchObjectsXPamount(token, user.id)
             // sum XP in bytes for filtered transactions:
             const xpAmountBytes = totalxp.reduce((sum, tx) => sum + tx.amount, 0)
             document.getElementById('xp').textContent = Math.round(xpAmountBytes / 1000) + ' KB'
 
-            // SECTION 3 (latest audits):
-
+            // SECTION 3 (latest audits): -------------------------------------------------------------------
             const audits = await this.s3FetchLatestAudits(token, user.id)
             const auditsContainer = document.getElementById('audits')
             auditsContainer.innerHTML = ''
@@ -71,7 +70,32 @@ class ProfileManager {
                 auditsContainer.appendChild(auditElement)
             })
 
-            // SECTION 4 (SVG Graph 1):
+            // SECTION 4 (SVG Graph 1): ---------------------------------------------------------------------
+            const xpByMonth = {}
+            totalxp.forEach(tx => {
+                // Format: YYYY-MM
+                const month = new Date(tx.createdAt).toISOString().slice(0, 7)
+                xpByMonth[month] = (xpByMonth[month] || 0) + tx.amount
+            })
+            // Sort months chronologically
+            const months = Object.keys(xpByMonth).sort()
+            const xpArray = months.map(month => xpByMonth[month])
+
+            // Draw the SVG bar chart
+            this.drawXPChart(xpArray, months)
+
+            // Optionally, add month labels below bars:
+            const svg = document.getElementById('xp-chart')
+            months.forEach((month, i) => {
+                const x = 50 + i * (40 + 10) + 20 // barWidth/2 for center
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+                label.setAttribute('x', x)
+                label.setAttribute('y', 295)
+                label.setAttribute('text-anchor', 'middle')
+                label.setAttribute('font-size', '12px')
+                label.textContent = month
+                svg.appendChild(label)
+            })
 
             // SECTION 5 (SVG Graph 2):
 
@@ -145,10 +169,8 @@ class ProfileManager {
                             ]
                             }
                         ) {
-                            id
                             amount
-                            path
-                            eventId
+                            createdAt
                         }
                     }
                 `
@@ -199,9 +221,9 @@ class ProfileManager {
         return data.data.audit
     }
 
-// SECTIONS 4 & 5 (SVG graphs):
+// SECTIONS 4 (SVG graph for XP over time):
 
-    drawXPChart(xpArray) {
+    drawXPChart(xpArray, months) {
         const svg = document.getElementById('xp-chart')
         svg.innerHTML = ''
         if (!xpArray.length) return
@@ -215,6 +237,7 @@ class ProfileManager {
             const x = 50 + i * (barWidth + 10)
             const y = 280 - barHeight
 
+            // Draw bar
             const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
             rect.setAttribute('x', x)
             rect.setAttribute('y', y)
@@ -222,7 +245,46 @@ class ProfileManager {
             rect.setAttribute('height', barHeight)
             rect.setAttribute('fill', '#667eea')
             svg.appendChild(rect)
+
+            // Draw XP value above bar
+            const value = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+            value.setAttribute('x', x + barWidth / 2)
+            value.setAttribute('y', y - 8)
+            value.setAttribute('text-anchor', 'middle')
+            value.setAttribute('font-size', '12px')
+            value.setAttribute('fill', '#333')
+            value.textContent = Math.round(xp / 1000) + ' KB'
+            svg.appendChild(value)
+
+            // Draw month label below bar
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+            label.setAttribute('x', x + barWidth / 2)
+            label.setAttribute('y', 295)
+            label.setAttribute('text-anchor', 'middle')
+            label.setAttribute('font-size', '12px')
+            label.textContent = months[i].slice(5) + '/' + months[i].slice(0, 4) // MM/YYYY
+            svg.appendChild(label)
         })
+
+        // Y-axis
+        const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        yAxis.setAttribute('x1', 40)
+        yAxis.setAttribute('y1', 30)
+        yAxis.setAttribute('x2', 40)
+        yAxis.setAttribute('y2', 280)
+        yAxis.setAttribute('stroke', '#aaa')
+        yAxis.setAttribute('stroke-width', '2')
+        svg.appendChild(yAxis)
+
+        // X-axis
+        const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        xAxis.setAttribute('x1', 40)
+        xAxis.setAttribute('y1', 280)
+        xAxis.setAttribute('x2', 400)
+        xAxis.setAttribute('y2', 280)
+        xAxis.setAttribute('stroke', '#aaa')
+        xAxis.setAttribute('stroke-width', '2')
+        svg.appendChild(xAxis)
     }
 
     drawProjectPieChart(pass, fail) {
