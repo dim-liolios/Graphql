@@ -241,8 +241,7 @@ body {
 
 /* Statistics Section */
 .stats-section {
-    display: flex;
-    justify-content: center;
+    margin-top: 40px;
 }
 
 .stats-section h2 {
@@ -264,10 +263,9 @@ body {
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     text-align: center;
-    width: 100%;
-    max-width: 700px; /* Limit width */
     margin: 0 auto;
     box-sizing: border-box;
+    display: inline-block; 
 }
 
 .stat-card h3 {
