@@ -276,7 +276,7 @@ class ProfileManager {
             label.setAttribute('text-anchor', 'middle')
             label.setAttribute('font-size', '12px')
             label.setAttribute('fill', '#333')
-            label.setAttribute('transform', `rotate(-45, ${x + barWidth / 2}, 320)`)
+            // label.setAttribute('transform', `rotate(-45, ${x + barWidth / 2}, 320)`)
             svg.appendChild(label)
         })
 
