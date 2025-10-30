@@ -272,7 +272,7 @@ class ProfileManager {
             const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
             label.textContent = `${monthNames[parseInt(month, 10) - 1]}/${year.slice(2)}`
             label.setAttribute('x', x + barWidth / 2)
-            label.setAttribute('y', 320)d
+            label.setAttribute('y', 320)
             label.setAttribute('text-anchor', 'middle')
             label.setAttribute('font-size', '12px')
             label.setAttribute('fill', '#333')
