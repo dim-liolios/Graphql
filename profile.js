@@ -272,10 +272,11 @@ class ProfileManager {
             const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
             label.textContent = `${monthNames[parseInt(month, 10) - 1]}/${year.slice(2)}`
             label.setAttribute('x', x + barWidth / 2)
-            label.setAttribute('y', 310)
-            label.setAttribute('text-anchor', 'end')
+            label.setAttribute('y', 320) // move a bit lower if needed
+            label.setAttribute('text-anchor', 'middle') // center the label
             label.setAttribute('font-size', '12px')
-            label.setAttribute('transform', `rotate(-45, ${x + barWidth / 2}, 310)`)
+            label.setAttribute('fill', '#333')
+            label.setAttribute('transform', `rotate(-45, ${x + barWidth / 2}, 320)`)
             svg.appendChild(label)
         })
 
