@@ -262,6 +262,11 @@ body {
     color: #333;
 }
 
+.stat-card svg {
+    display: block;
+    margin: 0 auto;
+}
+
 /* SVG Styling */
 svg {
     background: #f8f9fa;
