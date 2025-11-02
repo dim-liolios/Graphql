@@ -91,10 +91,28 @@ class ProfileManager {
             const months = this.getAllMonths(startMonth, now)
             const xpArray = months.map(month => xpByMonth[month] || 0)
 
-            this.drawXPChart(xpArray, months)
+            this.s4DrawXPChart(xpArray, months)
 
             // SECTION 5 (SVG Graph 2):
+            
+            const auditTransactions = await this.s5FetchAuditsRatio(token, user.id)
+            let doneXP = 0
+            let receivedXP = 0
 
+            auditTransactions.forEach(tx => {
+                if (tx.type === 'up') {
+                    doneXP += tx.amount
+                } else if (tx.type === 'down') {
+                    receivedXP += tx.amount
+                }
+            })
+
+            
+            document.getElementById('audit-done').textContent = Math.round(doneXP / 1000) + ' KB'
+            document.getElementById('audit-received').textContent = Math.round(receivedXP / 1000) + ' KB'
+
+            // Draw the pie chart
+            this.drawAuditRatioChart(doneXP, receivedXP)
 
         } catch (error) {
             console.error('Failed to load user data:', error)
@@ -158,11 +176,9 @@ class ProfileManager {
                     query {
                         transaction(
                             where: {
-                            _and: [
-                                { userId: { _eq: ${userId} } },
-                                { type: { _eq: "xp" } },
-                                { eventId: { _eq: 200} }
-                            ]
+                                userId: { _eq: ${userId} },
+                                type: { _eq: "xp" },
+                                eventId: { _eq: 200 }
                             }
                         ) {
                             amount
@@ -217,7 +233,7 @@ class ProfileManager {
         return data.data.audit
     }
 
-// SECTIONS 4 (SVG graph for XP over time):
+// SECTION 4 (SVG graph for XP over time):
     getAllMonths(from, to) {
         const months = []
         let current = new Date(from.getFullYear(), from.getMonth(), 1)
@@ -231,7 +247,7 @@ class ProfileManager {
         return months
     }
 
-    drawXPChart(xpArray, months) {
+    s4DrawXPChart(xpArray, months) {
         const maxHeight = 250
         const barWidth = 40
         const svgWidth = 60 + months.length * (barWidth + 10)
@@ -270,7 +286,7 @@ class ProfileManager {
             const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
             const [year, month] = months[i].split('-')
             const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-            label.textContent = `${monthNames[parseInt(month, 10) - 1]}/${year.slice(2)}`
+            label.textContent = `${monthNames[parseInt(month, 10) - 1]} '${year.slice(2)}`
             label.setAttribute('x', x + barWidth / 2)
             label.setAttribute('y', 320)
             label.setAttribute('text-anchor', 'middle')
@@ -301,46 +317,72 @@ class ProfileManager {
         svg.appendChild(xAxis)
     }
 
-    drawProjectPieChart(pass, fail) {
-        const svg = document.getElementById('project-chart');
+// SECTION 5 (SVG graph for Audit ratio):
+
+    async s5FetchAuditsRatio(token, userId) {
+        const response = await fetch('https://graphql-wi3q.onrender.com/api/graphql-engine/v1/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `
+                    query {
+                    transaction(
+                        where: {
+                        userId: { _eq: ${userId} },
+                        type: { _in: ["up", "down"] }
+                        eventId: { _eq: 200} 
+                        }
+                    ) {
+                        type
+                        amount
+                        }
+                    }
+                `
+            })
+        })
+        const data = await response.json()
+        if (data.errors || !data.data || !data.data.transaction) {
+            console.error('XP amount query error:', data.errors || data)
+            return []
+        }
+        return data.data.transaction
+    }
+
+    drawAuditRatioChart(done, received) {
+        const svg = document.getElementById('audit-chart');
         svg.innerHTML = '';
-        const total = pass + fail;
+        const total = done + received;
         if (total === 0) return;
 
         const cx = 200, cy = 150, r = 100;
-        const passAngle = (pass / total) * 2 * Math.PI;
+        const doneAngle = (done / total) * 2 * Math.PI;
 
-        // Pass slice
+        // Done slice
         const x1 = cx + r * Math.cos(0)
         const y1 = cy + r * Math.sin(0)
-        const x2 = cx + r * Math.cos(passAngle)
-        const y2 = cy + r * Math.sin(passAngle)
-        const largeArcFlag = pass > fail ? 1 : 0
-        const pathPass = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-        pathPass.setAttribute('d',
+        const x2 = cx + r * Math.cos(doneAngle)
+        const y2 = cy + r * Math.sin(doneAngle)
+        const largeArcFlag = done > received ? 1 : 0
+        const pathDone = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        pathDone.setAttribute('d',
             `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArcFlag},1 ${x2},${y2} Z`
         )
-        pathPass.setAttribute('fill', '#4caf50')
-        svg.appendChild(pathPass)
+        pathDone.setAttribute('fill', '#4caf50')
+        svg.appendChild(pathDone)
 
-        // Fail slice
-        const x3 = cx + r * Math.cos(passAngle)
-        const y3 = cy + r * Math.sin(passAngle)
+        // Received slice
+        const x3 = cx + r * Math.cos(doneAngle)
+        const y3 = cy + r * Math.sin(doneAngle)
         const x4 = cx + r * Math.cos(2 * Math.PI)
         const y4 = cy + r * Math.sin(2 * Math.PI)
-        const pathFail = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-        pathFail.setAttribute('d',
+        const pathReceived = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        pathReceived.setAttribute('d',
             `M${cx},${cy} L${x3},${y3} A${r},${r} 0 ${largeArcFlag ? 0 : 1},1 ${x4},${y4} Z`
         )
-        pathFail.setAttribute('fill', '#ff4757')
-        svg.appendChild(pathFail)
+        pathReceived.setAttribute('fill', '#ff4757')
+        svg.appendChild(pathReceived)
     }
 }
-
-/* notes:
-
-
-
-
-
-*/
