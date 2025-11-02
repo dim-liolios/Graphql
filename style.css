@@ -285,3 +285,15 @@ svg {
     background: #f8f9fa;
     border-radius: 5px;
 }
+
+.audit-stats {
+    margin-top: 18px;
+    font-size: 1.1rem;
+    color: #333;
+}
+.audit-stats div {
+    margin-bottom: 6px;
+}
+.audit-stats strong {
+    color: #667eea;
+}

@@ -107,9 +107,18 @@ class ProfileManager {
                 }
             })
 
-            
-            document.getElementById('audit-done').textContent = Math.round(doneXP / 1000) + ' KB'
-            document.getElementById('audit-received').textContent = Math.round(receivedXP / 1000) + ' KB'
+            const doneMB = doneXP / 1_000_000
+            const receivedMB = receivedXP / 1_000_000
+
+            document.getElementById('audit-done').textContent = doneMB.toFixed(2) + ' MB'
+            document.getElementById('audit-received').textContent = receivedMB.toFixed(2) + ' MB'
+
+            // Calculate and show ratio
+            let ratio = '-'
+            if (receivedXP > 0) {
+                ratio = (doneXP / receivedXP).toFixed(2)
+            }
+            document.getElementById('audit-ratio').textContent = ratio
 
             // Draw the pie chart
             this.drawAuditRatioChart(doneXP, receivedXP)
