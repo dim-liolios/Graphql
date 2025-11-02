@@ -126,17 +126,23 @@ body {
 }
 
 .logout-btn {
-    padding: 10px 20px;
-    background: #ff4757;
-    color: white;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+    color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.10);
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background 0.3s, transform 0.2s;
+    letter-spacing: 0.5px;
 }
 
 .logout-btn:hover {
-    background: #ff3838;
+    background: linear-gradient(135deg, #ff3838 0%, #ff6b81 100%);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 4px 16px rgba(255, 71, 87, 0.18);
 }
 
 /* Profile Info Cards */

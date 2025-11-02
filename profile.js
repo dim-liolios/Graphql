@@ -121,7 +121,7 @@ class ProfileManager {
             document.getElementById('audit-ratio').textContent = ratio
 
             // Draw the pie chart
-            this.drawAuditRatioChart(doneXP, receivedXP)
+            this.s5drawAuditRatioChart(doneXP, receivedXP)
 
         } catch (error) {
             console.error('Failed to load user data:', error)
@@ -360,7 +360,7 @@ class ProfileManager {
         return data.data.transaction
     }
 
-    drawAuditRatioChart(done, received) {
+    s5drawAuditRatioChart(done, received) {
         const svg = document.getElementById('audit-chart');
         svg.innerHTML = '';
         const total = done + received;
@@ -393,5 +393,37 @@ class ProfileManager {
         )
         pathReceived.setAttribute('fill', '#ff4757')
         svg.appendChild(pathReceived)
+
+        // --- Add labels ON the chart ---
+
+        // For "done" (green) label, place at the middle angle of the done slice
+        const doneMidAngle = doneAngle / 2
+        const doneLabelX = cx + (r * 0.6) * Math.cos(doneMidAngle)
+        const doneLabelY = cy + (r * 0.6) * Math.sin(doneMidAngle)
+        const doneText = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        doneText.setAttribute('x', doneLabelX)
+        doneText.setAttribute('y', doneLabelY)
+        doneText.setAttribute('text-anchor', 'middle')
+        doneText.setAttribute('dominant-baseline', 'middle')
+        doneText.setAttribute('font-size', '18px')
+        doneText.setAttribute('fill', '#fff')
+        doneText.setAttribute('font-weight', 'bold')
+        doneText.textContent = 'done'
+        svg.appendChild(doneText)
+
+        // For "received" (red) label, place at the middle angle of the received slice
+        const receivedMidAngle = doneAngle + (2 * Math.PI - doneAngle) / 2
+        const receivedLabelX = cx + (r * 0.6) * Math.cos(receivedMidAngle)
+        const receivedLabelY = cy + (r * 0.6) * Math.sin(receivedMidAngle)
+        const receivedText = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        receivedText.setAttribute('x', receivedLabelX)
+        receivedText.setAttribute('y', receivedLabelY)
+        receivedText.setAttribute('text-anchor', 'middle')
+        receivedText.setAttribute('dominant-baseline', 'middle')
+        receivedText.setAttribute('font-size', '18px')
+        receivedText.setAttribute('fill', '#fff')
+        receivedText.setAttribute('font-weight', 'bold')
+        receivedText.textContent = 'received'
+        svg.appendChild(receivedText)
     }
 }
